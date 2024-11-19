@@ -1,5 +1,8 @@
   # Estrutura de Dados para Logging do Robô Seguidor de Linha    
 
+
+  
+
 ## Objetivo
 Sistema de logging para armazenar dados de telemetria do robô durante a corrida, permitindo análise posterior do desempenho.
 
