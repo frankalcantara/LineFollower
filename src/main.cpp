@@ -40,7 +40,7 @@ Timer setupTimer;
 
 void setup() {
     DEBUG_BEGIN(115200);
-    DEBUG_PRINTLN("Starting setup");
+    DEBUG_PRINT(DEBUG_SETUP_START);
 
     // Hardware initialization
     Peripherals::initialize();
@@ -100,7 +100,7 @@ void setup() {
     currentSpeed = BASE_FAST;
     lapCount = 0;
 
-    DEBUG_PRINTLN("Setup completed");
+    DEBUG_PRINTLN(DEBUG_SETUP_COMPLETE);
 }
 
 void loop() {
@@ -114,8 +114,8 @@ void loop() {
     }
 
     // Get current position and calculate error
-    int p = Sensors::calculateLinePosition();
-    int error = p - targetLinePosition;
+    int linePosition = Sensors::calculateLinePosition();
+    int error = linePosition - targetLinePosition;
 
     // Update currentSpeed speed using new control
     currentSpeed = CourseMarkers::speedControl(error);
@@ -141,10 +141,12 @@ void loop() {
     previousError = error;
 
     // Debug output
-    DEBUG_PRINT("Base: ");
+#if DEBUG_LEVEL > 0
+    DEBUG_PRINT(DEBUG_BASE);
     DEBUG_PRINT_VAL(currentSpeed);
-    DEBUG_PRINT(" Error: ");
+    DEBUG_PRINT(DEBUG_ERROR);
     DEBUG_PRINT_VAL(error);
-    DEBUG_PRINT(" Correction: ");
+    DEBUG_PRINT(DEBUG_CORRECTION);
     DEBUG_PRINTLN_VAL(correction_power);
+#endif
 }

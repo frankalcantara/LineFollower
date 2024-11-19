@@ -4,23 +4,23 @@
 #include "debug.h"
 
 // Static member initialization
-int Sensors::sensorMin[NUM_SENSORES] = { SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE };
-int Sensors::sensorMax[NUM_SENSORES] = { SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE };
-volatile int Sensors::processedSensorValues[NUM_SENSORES];
+int16_t Sensors::sensorMin[NUM_SENSORES] = { SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE };
+int16_t Sensors::sensorMax[NUM_SENSORES] = { SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE };
+volatile int16_t Sensors::processedSensorValues[NUM_SENSORES];
 boolean Sensors::isLineDetected;
-int Sensors::currentLinePosition;
-int Sensors::lastValidPosition;
+int16_t Sensors::lastValidLinePosition;
+int16_t Sensors::lastValidPosition;
 
 void Sensors::calibration() {
   static Timer calibrationTimer;
-  static int calibrationCount = 0;
+  static uint16_t calibrationCount = 0;
 
   calibrationCount = 0;
   calibrationTimer.Start(CALIBRATION_DELAY);
 
   while (calibrationCount < CALIBRATION_SAMPLES) {
     if (calibrationTimer.Expired()) {
-      int v_s[NUM_SENSORES];
+      int16_t v_s[NUM_SENSORES];
 
       // Read all sensors
       v_s[0] = analogRead(PIN_LINE_LEFT_EDGE);
@@ -31,7 +31,7 @@ void Sensors::calibration() {
       v_s[5] = analogRead(PIN_LINE_RIGHT_EDGE);
 
       // Update min and max values
-      for (int i = 0; i < NUM_SENSORES; i++) {
+      for (uint8_t i = 0; i < NUM_SENSORES; i++) {
         DEBUG_PRINT_VAL(v_s[i]);
         DEBUG_PRINT("\t");
 
@@ -42,7 +42,7 @@ void Sensors::calibration() {
 
       // Debug minimum values
       DEBUG_PRINT("Minimums\t");
-      for (int i = 0; i < NUM_SENSORES; i++) {
+      for (uint8_t i = 0; i < NUM_SENSORES; i++) {
         DEBUG_PRINT_VAL(sensorMin[i]);
         DEBUG_PRINT("\t");
       }
@@ -50,20 +50,20 @@ void Sensors::calibration() {
 
       // Debug maximum values
       DEBUG_PRINT("Maximums\t");
-      for (int i = 0; i < NUM_SENSORES; i++) {
+      for (uint8_t i = 0; i < NUM_SENSORES; i++) {
         DEBUG_PRINT_VAL(sensorMax[i]);
         DEBUG_PRINT("\t");
       }
       DEBUG_PRINTLN("");
 
       calibrationCount++;
-      calibrationTimer.Start(CALIBRATION_DELAY);  // Restart timer for next sample
+      calibrationTimer.Start(CALIBRATION_DELAY);
     }
   }
 }
 
 void Sensors::readSensors() {
-  int s[NUM_SENSORES];
+  int16_t s[NUM_SENSORES];
   bool isOnline;
   int localSum = 0;
 
@@ -76,7 +76,7 @@ void Sensors::readSensors() {
   s[5] = analogRead(PIN_LINE_RIGHT_EDGE);
 
   // Process values
-  for (int i = 0; i < NUM_SENSORES; i++) {
+  for (uint8_t i = 0; i < NUM_SENSORES; i++) {
     if (s[i] < sensorMin[i]) s[i] = sensorMin[i];
     if (s[i] > sensorMax[i]) s[i] = sensorMax[i];
     s[i] = map(s[i], sensorMin[i], sensorMax[i], 100, 0);
@@ -88,22 +88,22 @@ void Sensors::readSensors() {
 
   // Update global variables atomically
   noInterrupts();
-  for (int i = 0; i < NUM_SENSORES; i++) {
+  for (uint8_t i = 0; i < NUM_SENSORES; i++) {
     processedSensorValues[i] = s[i];
   }
   isLineDetected = isOnline;
   interrupts();
 }
 
-int Sensors::calculateLinePosition() {
+int16_t Sensors::calculateLinePosition() {
   readSensors();
 
-  int s_p_local[NUM_SENSORES];
+  int16_t s_p_local[NUM_SENSORES];
   bool isOnline;
 
   // Copy values atomically
   noInterrupts();
-  for (int i = 0; i < NUM_SENSORES; i++) {
+  for (uint8_t i = 0; i < NUM_SENSORES; i++) {
     s_p_local[i] = processedSensorValues[i];
   }
   isOnline = isLineDetected;
@@ -117,20 +117,20 @@ int Sensors::calculateLinePosition() {
   int sum = s_p_local[0] + s_p_local[1] + s_p_local[2] +
     s_p_local[3] + s_p_local[4] + s_p_local[5];
 
-  // Update position based on sensor readings
+// Update position based on sensor readings
   if (isOnline && sum > SENSOR_THRESHOLD) {
     if (sum != 0) {
       float position = constrain(100.0f * avg / sum, -100.0f, 100.0f);
-      currentLinePosition = int(position);
+      lastValidLinePosition = int16_t(position);
     }
     else {
-      currentLinePosition = lastValidPosition;
+      lastValidLinePosition = lastValidPosition;
     }
   }
   else {
-    currentLinePosition = (lastValidPosition < 0) ? -100 : 100;
+    lastValidLinePosition = (lastValidPosition < 0) ? -100 : 100;
   }
 
-  lastValidPosition = currentLinePosition;
-  return currentLinePosition;
+  lastValidPosition = lastValidLinePosition;
+  return lastValidLinePosition;
 }

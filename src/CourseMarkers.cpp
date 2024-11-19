@@ -11,8 +11,8 @@ int CourseMarkers::lastMarkerState = 0;
 int CourseMarkers::previousMarkerState = 0;
 int CourseMarkers::oldMarkerState = 0;
 int CourseMarkers::currentMarkerState = 0;
-int CourseMarkers::leftMarkerDetected = 0;
-int CourseMarkers::rightMarkerDetected = 0;
+int16_t CourseMarkers::leftMarkerDetected = 0;    // Changed to match header
+int16_t CourseMarkers::rightMarkerDetected = 0;   // Changed to match header
 bool CourseMarkers::isTurning = false;
 bool CourseMarkers::isExitingTurn = false;
 uint8_t CourseMarkers::boostCountdown = 0;
@@ -88,7 +88,7 @@ int CourseMarkers::speedControl(int error) {
       TURN_SPEED);
   }
 
-  // Apply boost if needed and not in isPrecisionMode mode
+  // Apply boost if needed and not in precision mode
   if (isExitingTurn && boostCountdown > 0 && !isPrecisionMode) {
     target_speed = min(255, target_speed + 30);
     boostCountdown--;
@@ -119,9 +119,15 @@ void CourseMarkers::processMarkerSignals() {
 
   // Handle geometry changes
   if (lastMarkerState != currentMarkerState) {
-    if (currentMarkerState == 0 && lastMarkerState == 2 && previousMarkerState == 0) { handleFinishLine(); }
-    if (currentMarkerState == 0 && lastMarkerState == 1 && previousMarkerState == 0) { handleSpeedMode(); }
-    if (currentMarkerState == 0 && ((lastMarkerState == 3) || (previousMarkerState == 3) || (oldMarkerState == 3))) { handleIntersection(); }
+    if (currentMarkerState == 0 && lastMarkerState == 2 && previousMarkerState == 0) {
+      handleFinishLine();
+    }
+    if (currentMarkerState == 0 && lastMarkerState == 1 && previousMarkerState == 0) {
+      handleSpeedMode();
+    }
+    if (currentMarkerState == 0 && ((lastMarkerState == 3) || (previousMarkerState == 3) || (oldMarkerState == 3))) {
+      handleIntersection();
+    }
     oldMarkerState = previousMarkerState;
     previousMarkerState = lastMarkerState;
     lastMarkerState = currentMarkerState;
@@ -161,7 +167,7 @@ void CourseMarkers::handleSpeedMode() {
   if (!isPrecisionMode) {
     isPrecisionMode = true;
     currentSpeed = SPEED_SLOW;
-    isTurning = false;  // Reset curve state
+    isTurning = false;
     isExitingTurn = false;
     boostCountdown = 0;
     DEBUG_PRINTLN("Slow mode activated");
@@ -169,7 +175,7 @@ void CourseMarkers::handleSpeedMode() {
   else {
     isPrecisionMode = false;
     currentSpeed = BASE_FAST;
-    isTurning = false;  // Reset curve state
+    isTurning = false;
     isExitingTurn = false;
     boostCountdown = 0;
     DEBUG_PRINTLN("Fast mode activated");

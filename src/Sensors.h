@@ -6,12 +6,12 @@
 
 class Sensors {
 private:
-    static int sensorMin[NUM_SENSORES];
-    static int sensorMax[NUM_SENSORES];
-    static volatile int processedSensorValues[NUM_SENSORES];
+    static int16_t sensorMin[NUM_SENSORES];
+    static int16_t sensorMax[NUM_SENSORES];
+    static volatile int16_t processedSensorValues[NUM_SENSORES];
     static boolean isLineDetected;
-    static int currentLinePosition;
-    static int lastValidPosition;
+    static int16_t lastValidLinePosition;
+    static int16_t lastValidPosition;
 
     // Helper method
     static void readSensors();
@@ -21,7 +21,7 @@ public:
     static void calibration();
 
     // Line position calculation
-    static int calculateLinePosition();
+    static int16_t calculateLinePosition();
 };
 
 #endif // SENSORS_H

@@ -12,8 +12,8 @@ private:
     static int previousMarkerState;
     static int oldMarkerState;
     static int currentMarkerState;
-    static int leftMarkerDetected;
-    static int rightMarkerDetected;
+    static int16_t leftMarkerDetected;   // Changed to int16_t for analog read
+    static int16_t rightMarkerDetected;  // Changed to int16_t for analog read
 
     // Speed control variables
     static bool isTurning;
