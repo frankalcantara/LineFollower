@@ -1,0 +1,45 @@
+project:
+  type: book
+  output-dir: Docs
+  resources:
+    - "images/"
+    - "styles/"
+
+book:
+  title: "Comprehensive Environment for Line-Following Robot Development"
+  subtitle: "This project provides a foundational software platform for developing line-following robots."
+  author: "Frank Coelho de Alcantara"
+  date: "10/11/2024"
+  chapters:
+    - index.qmd
+    # - intro.qmd
+    # - sintSem.qmd
+    # - app1.qmd
+    # - redux.qmd
+    # - estredux.qmd
+    # - equiv.qmd
+    # - recur.qmd
+    # - simples.qmd
+    # - comp.qmd
+    # - tipado.qmd
+  page-footer: "Copyright © 2024 Frank de Alcantara"
+
+format:
+  html:
+    output-dir: Docs/_site
+    theme:
+      light: cosmo
+      dark: [cosmo, theme-dark.scss]
+    code-background: true
+    code-copy: true
+    css: styles.css
+    toc: true
+    navigation:
+      type: "numbered"
+    metadata:
+      twitter-card: true
+      open-graph: true
+      reader-mode: true
+  pdf:
+    output-dir: Docs/_pdf
+    documentclass: report

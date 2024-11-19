@@ -5,6 +5,10 @@
 #include "globals.h"
 #include "MotorsDrivers.h"
 
+#if DEBUG_LEVEL > 0
+#include "FlashManager.h"
+#endif
+
 // Static member initialization
 int CourseMarkers::speed = 0;
 int CourseMarkers::lastMarkerState = 0;
@@ -158,6 +162,9 @@ void CourseMarkers::handleFinishLine() {
       isStopSequenceActive = true;
       slowdownTimer.Start(50);  // 50ms for deceleration
       stopTimer.Start(STOP_DELAY);
+#if DEBUG_LEVEL > 0
+      FlashManager::setLogReady();
+#endif
     }
     break;
   }

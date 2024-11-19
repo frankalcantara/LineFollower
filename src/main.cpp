@@ -1,4 +1,15 @@
 #include <Arduino.h>
+
+// Debug system includes - must come first
+#if DEBUG_LEVEL > 0
+#include "DataStructures.h"
+#include "ProfileManager.h"
+#include "FlashManager.h"
+#include "Logger.h"
+#include "LedPattern.h"
+#endif
+
+// Core system includes
 #include "config.h"
 #include "debug.h"
 #include "Timer.h"
@@ -15,14 +26,6 @@ bool isStopSequenceActive = false;
 int lapCount = 0;
 bool isPrecisionMode = false;
 
-// Control parameters
-int targetLinePosition = POSICION_IDEAL_DEFAULT;
-float kProportional = K_PROPORTIONAL_DEFAULT;
-float kDerivative = K_DERIVATIVE_DEFAULT;
-float filterCoefficient = FILTER_COEFFICIENT_DEFAULT;
-int filteredErrorRate = 0;
-int previousError = 0;
-
 // Setup states
 enum SetupState {
     SETUP_INIT,
@@ -34,12 +37,36 @@ enum SetupState {
     SETUP_COMPLETE
 };
 
-// Setup control variables
-SetupState setupState = SETUP_INIT;
-Timer setupTimer;
+#if DEBUG_LEVEL > 0
+DebugMode currentDebugMode = (DEBUG_LEVEL == 1) ? DebugMode::ANALYSIS : DebugMode::SPEED;
+uint8_t plannedLaps = (DEBUG_LEVEL == 1) ? DEBUG_LAPS_MODE1 : DEBUG_LAPS_MODE2;
+#endif
+
+// Control parameters
+int targetLinePosition = POSICION_IDEAL_DEFAULT;
+float kProportional = K_PROPORTIONAL_DEFAULT;
+float kDerivative = K_DERIVATIVE_DEFAULT;
+float filterCoefficient = FILTER_COEFFICIENT_DEFAULT;
+int filteredErrorRate = 0;
+int previousError = 0;
 
 void setup() {
-    DEBUG_BEGIN(115200);
+    // Initialize serial if in debug mode
+#if DEBUG_LEVEL > 0
+    Serial.begin(115200);
+    // Initialize profile manager with appropriate mode
+    ProfileManager::initialize(currentDebugMode);
+
+    // Update control parameters from profile
+    kProportional = ProfileManager::getKP(K_PROPORTIONAL_DEFAULT);
+    kDerivative = ProfileManager::getKD(K_DERIVATIVE_DEFAULT);
+    filterCoefficient = ProfileManager::getFilterCoefficient(FILTER_COEFFICIENT_DEFAULT);
+
+    // Initialize logger and flash
+    FlashManager::initialize();
+    Logger::initialize();
+#endif
+
     DEBUG_PRINT(DEBUG_SETUP_START);
 
     // Hardware initialization
@@ -48,6 +75,9 @@ void setup() {
     pinMode(PIN_STATUS_LED, OUTPUT);
 
     // Non-blocking setup loop
+    SetupState setupState = SETUP_INIT;
+    Timer setupTimer;
+
     while (setupState != SETUP_COMPLETE) {
         switch (setupState) {
         case SETUP_INIT:
@@ -88,28 +118,44 @@ void setup() {
             setupState = SETUP_COMPLETE;
             break;
 
-        case SETUP_COMPLETE:
         default:
             break;
         }
     }
 
-    // Initialize PID and control variables
+    // Initialize control variables
     previousError = 0;
     filteredErrorRate = 0;
-    currentSpeed = BASE_FAST;
-    lapCount = 0;
 
+    // Set initial speed based on mode
+#if DEBUG_LEVEL > 0
+    currentSpeed = ProfileManager::getSpeedValue(BASE_FAST);
+    // Start logging session
+    Logger::startSession(currentDebugMode, plannedLaps);
+#else
+    currentSpeed = BASE_FAST;
+#endif
+
+    lapCount = 0;
     DEBUG_PRINTLN(DEBUG_SETUP_COMPLETE);
 }
 
 void loop() {
-    // Detect geometry to update situation
+#if DEBUG_LEVEL > 0
+    LedPattern::process();
+#endif
+
+// Detect geometry to update situation
     CourseMarkers::processMarkerSignals();
 
     // Skip control if robot is stopped
     if (isRobotStopped) {
         MotorDriver::setMotorsPower(0, 0);
+#if DEBUG_LEVEL > 0
+        if (Logger::isLogging()) {
+            Logger::endSession();
+        }
+#endif
         return;
     }
 
@@ -117,10 +163,14 @@ void loop() {
     int linePosition = Sensors::calculateLinePosition();
     int error = linePosition - targetLinePosition;
 
-    // Update currentSpeed speed using new control
+    // Update current speed using new control
+#if DEBUG_LEVEL > 0
+    currentSpeed = ProfileManager::getSpeedValue(CourseMarkers::speedControl(error));
+#else
     currentSpeed = CourseMarkers::speedControl(error);
+#endif
 
-    // Calculate error derivative and filter
+// Calculate error derivative and filter
     int d_error = error - previousError;
     filteredErrorRate = filterCoefficient * d_error + (1 - filterCoefficient) * filteredErrorRate;
 
@@ -140,8 +190,21 @@ void loop() {
     MotorDriver::setMotorsPower(left_power, right_power);
     previousError = error;
 
-    // Debug output
 #if DEBUG_LEVEL > 0
+// Log performance data
+    if (Logger::isLogging()) {
+        uint8_t state = 0;
+        if (isPrecisionMode) state |= 0x01;
+        if (abs(error) > TURN_THRESHOLD) state |= 0x02;
+
+        Logger::logPerformance(linePosition, error, correction_power,
+            left_power, right_power, state);
+
+        // Process logger (handles buffer flushing)
+        Logger::process();
+    }
+
+    // Debug output
     DEBUG_PRINT(DEBUG_BASE);
     DEBUG_PRINT_VAL(currentSpeed);
     DEBUG_PRINT(DEBUG_ERROR);

@@ -1,10 +1,36 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <Arduino.h>
+
 // ====== Debugging ======
-// Set to 1 to enable serial monitor information or 0 for better performance
+// Set to 1 for analysis mode, 2 for speed mode, or 0 for normal operation
 #ifndef DEBUG_LEVEL
 #define DEBUG_LEVEL 0
+#endif
+
+#if DEBUG_LEVEL > 0
+#include "DataStructures.h"  // Must be included before ProfileManager.h
+
+// Debug configuration
+static constexpr uint8_t DEBUG_LAPS_MODE1 = 5;    // Number of laps for analysis mode
+static constexpr uint8_t DEBUG_LAPS_MODE2 = 3;    // Number of laps for speed mode
+
+// Logging parameters
+static constexpr uint16_t SAMPLE_RATE_STRAIGHT = 50;   // ms between samples on straight
+static constexpr uint16_t SAMPLE_RATE_CURVE = 20;      // ms between samples on curves
+static constexpr uint16_t LOG_BUFFER_SIZE = 64;        // Size of circular buffer
+
+// Flash memory parameters
+static constexpr uint32_t FLASH_LOG_START = 0x1000;    // Start address for logging
+static constexpr uint16_t FLASH_PAGE_SIZE = 256;       // Flash page size for write operations
+static constexpr uint32_t FLASH_CONTROL_BYTE = 0x0800; // Control byte address
+static constexpr uint8_t FLASH_LOG_READY = 0xAA;       // Value indicating log is ready
+
+// LED Pattern parameters
+static constexpr uint16_t LED_SLOW_BLINK = 1000;       // Slow blink interval (ms)
+static constexpr uint16_t LED_FAST_BLINK = 300;        // Fast blink interval (ms)
+static constexpr uint16_t LED_PATTERN_SWITCH = 3000;   // Time to switch patterns (ms)
 #endif
 
 // ====== Pins ======
@@ -32,39 +58,29 @@ static const uint8_t PIN_MARKER_LEFT = A7;         // Left marker
 static const uint8_t PIN_MARKER_RIGHT = A0;        // Right marker
 
 // ====== Predefined Speeds ======
-// Adjust these speeds based on motor power and robot weight
+// These are base speeds, will be modified by ProfileManager in debug modes
 static constexpr uint8_t SPEED_STOP = 0;       // Stopped
-static constexpr uint8_t SPEED_STARTUP = 80;   // Increase if robot won't Start moving (25-75)
-static constexpr uint8_t SPEED_TURN = 100;     // Adjust for smooth turns (75-125)
-static constexpr uint8_t SPEED_BRAKE = 120;    // Braking speed - Increase if stopping too abruptly
-static constexpr uint8_t SPEED_CRUISE = 140;   // Medium speed - Adjust based on track
-static constexpr uint8_t SPEED_SLOW = 160;     // Slow mode - Increase if too isPrecisionMode (170-220)
-static constexpr uint8_t SPEED_FAST = 180;     // High speed - Adjust for stability
-static constexpr uint8_t SPEED_BOOST = 200;    // Very high speed - Use with caution
-static constexpr uint8_t SPEED_MAX = 220;      // Maximum - Do not modify
+static constexpr uint8_t SPEED_STARTUP = 80;   // Initial movement speed
+static constexpr uint8_t SPEED_TURN = 100;     // Turn speed
+static constexpr uint8_t SPEED_BRAKE = 120;    // Braking speed
+static constexpr uint8_t SPEED_CRUISE = 140;   // Medium speed
+static constexpr uint8_t SPEED_SLOW = 160;     // Precision mode speed
+static constexpr uint8_t SPEED_FAST = 180;     // High speed
+static constexpr uint8_t SPEED_BOOST = 200;    // Boost speed
+static constexpr uint8_t SPEED_MAX = 220;      // Maximum speed
 
 // ====== Speed Control Parameters ======
-// Increase ACCELERATION_STEP for faster curve exit (20-40)
-static constexpr uint8_t ACCELERATION_STEP = 25;
-// Increase BRAKE_STEP for stronger braking in curves (30-50)
-static constexpr uint8_t BRAKE_STEP = 60;
-// Decrease TURN_SPEED if sliding in curves (100-140)
-static constexpr uint8_t TURN_SPEED = 120;
-// Increase TURN_THRESHOLD if detecting curves too early (40-60)
-static constexpr uint8_t TURN_THRESHOLD = 45;
-// Decrease STRAIGHT_THRESHOLD if isPrecisionMode to accelerate after curves (15-25)
-static constexpr uint8_t STRAIGHT_THRESHOLD = 20;
-// Increase BOOST_DURATION for longer boost after curves (5-15)
-static constexpr uint8_t BOOST_DURATION = 10;
-// Increase BOOST_INCREMENT for more aggressive acceleration (20-40)
-static constexpr uint8_t BOOST_INCREMENT = 20;
+static constexpr uint8_t ACCELERATION_STEP = 25;   // Speed up step
+static constexpr uint8_t BRAKE_STEP = 60;         // Slow down step
+static constexpr uint8_t TURN_SPEED = 120;        // Speed in curves
+static constexpr uint8_t TURN_THRESHOLD = 45;     // Curve detection threshold
+static constexpr uint8_t STRAIGHT_THRESHOLD = 20;  // Straight line threshold
+static constexpr uint8_t BOOST_DURATION = 10;      // Boost time
+static constexpr uint8_t BOOST_INCREMENT = 20;     // Boost step
 
 // ====== PID Control Parameters ======
-// Increase KPROP for more aggressive correction (5.0-9.0)
 static constexpr float K_PROPORTIONAL_DEFAULT = 5.0f;
-// Decrease KDERIV if oscillating too much on straights (200-400)
 static constexpr float K_DERIVATIVE_DEFAULT = 600.0f;
-// Increase ALPHA for faster response (0.6-0.9)
 static constexpr float FILTER_COEFFICIENT_DEFAULT = 0.6f;
 
 // Desired center position (don't change without recalibrating control)
@@ -97,14 +113,12 @@ static constexpr int16_t SENSOR_MIN_VALUE = 0;
 static constexpr int16_t SENSOR_THRESHOLD = 120;
 
 // ====== Sensor Weights ======
-// Increase values for more aggressive edge corrections
-// Decrease for smoother movement
 // Maintain proportion between values when adjusting
-static constexpr float SENSOR_WEIGHT_S1 = -2.5f;  // Far left (1.2-1.8)
-static constexpr float SENSOR_WEIGHT_S2 = -1.2f;  // Left (0.9-1.5)
-static constexpr float SENSOR_WEIGHT_S3 = -0.6f;  // Center-left (0.4-0.8)
-static constexpr float SENSOR_WEIGHT_S4 = 0.6f;   // Center-right (0.4-0.8)
-static constexpr float SENSOR_WEIGHT_S5 = 1.2f;   // Right (0.9-1.5)
-static constexpr float SENSOR_WEIGHT_S6 = 2.5f;   // Far right (1.2-1.8)
+static constexpr float SENSOR_WEIGHT_S1 = -2.5f;  // Far left
+static constexpr float SENSOR_WEIGHT_S2 = -1.2f;  // Left
+static constexpr float SENSOR_WEIGHT_S3 = -0.6f;  // Center-left
+static constexpr float SENSOR_WEIGHT_S4 = 0.6f;   // Center-right
+static constexpr float SENSOR_WEIGHT_S5 = 1.2f;   // Right
+static constexpr float SENSOR_WEIGHT_S6 = 2.5f;   // Far right
 
 #endif // CONFIG_H
