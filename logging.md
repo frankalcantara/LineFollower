@@ -1,3 +1,5 @@
+Ainda em portugues
+
 # Estrutura de Dados para Logging do Robô Seguidor de Linha
 
 ## Objetivo
