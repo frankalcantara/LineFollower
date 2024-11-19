@@ -6,13 +6,13 @@ project:
     - "styles/"
 
 book:
-  title: "Comprehensive Environment for Line-Following Robot Development"
+  title: "RobotZero A Comprehensive Environment for Line-Following Robot Development"
   subtitle: "This project provides a foundational software platform for developing line-following robots."
   author: "Frank Coelho de Alcantara"
   date: "10/11/2024"
   chapters:
     - index.qmd
-    # - intro.qmd
+    - oper.qmd
     # - sintSem.qmd
     # - app1.qmd
     # - redux.qmd
