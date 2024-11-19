@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+.pio/build/project.checksum
+.pio/build/uno/.sconsign311.dblite
+.pio/build/uno/firmware.elf
+.pio/build/uno/firmware.hex
+.pio/libdeps/uno/integrity.dat
+.vscode/c_cpp_properties.json
+.vscode/extensions.json
+.vscode/launch.json
+.vscode/settings.json
+src/.vscode/settings.json
