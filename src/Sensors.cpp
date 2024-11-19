@@ -4,8 +4,8 @@
 #include "debug.h"
 
 // Static member initialization
-int Sensors::v_s_min[NUM_SENSORES] = { SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE };
-int Sensors::v_s_max[NUM_SENSORES] = { SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE };
+int Sensors::sensorMin[NUM_SENSORES] = { SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE, SENSOR_MAX_VALUE };
+int Sensors::sensorMax[NUM_SENSORES] = { SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE, SENSOR_MIN_VALUE };
 volatile int Sensors::processedSensorValues[NUM_SENSORES];
 boolean Sensors::isLineDetected;
 int Sensors::currentLinePosition;
@@ -35,15 +35,15 @@ void Sensors::calibration() {
         DEBUG_PRINT_VAL(v_s[i]);
         DEBUG_PRINT("\t");
 
-        if (v_s[i] < v_s_min[i]) v_s_min[i] = v_s[i];
-        if (v_s[i] > v_s_max[i]) v_s_max[i] = v_s[i];
+        if (v_s[i] < sensorMin[i]) sensorMin[i] = v_s[i];
+        if (v_s[i] > sensorMax[i]) sensorMax[i] = v_s[i];
       }
       DEBUG_PRINTLN("");
 
       // Debug minimum values
       DEBUG_PRINT("Minimums\t");
       for (int i = 0; i < NUM_SENSORES; i++) {
-        DEBUG_PRINT_VAL(v_s_min[i]);
+        DEBUG_PRINT_VAL(sensorMin[i]);
         DEBUG_PRINT("\t");
       }
       DEBUG_PRINTLN("");
@@ -51,7 +51,7 @@ void Sensors::calibration() {
       // Debug maximum values
       DEBUG_PRINT("Maximums\t");
       for (int i = 0; i < NUM_SENSORES; i++) {
-        DEBUG_PRINT_VAL(v_s_max[i]);
+        DEBUG_PRINT_VAL(sensorMax[i]);
         DEBUG_PRINT("\t");
       }
       DEBUG_PRINTLN("");
@@ -77,9 +77,9 @@ void Sensors::readSensors() {
 
   // Process values
   for (int i = 0; i < NUM_SENSORES; i++) {
-    if (s[i] < v_s_min[i]) s[i] = v_s_min[i];
-    if (s[i] > v_s_max[i]) s[i] = v_s_max[i];
-    s[i] = map(s[i], v_s_min[i], v_s_max[i], 100, 0);
+    if (s[i] < sensorMin[i]) s[i] = sensorMin[i];
+    if (s[i] > sensorMax[i]) s[i] = sensorMax[i];
+    s[i] = map(s[i], sensorMin[i], sensorMax[i], 100, 0);
     localSum += s[i];
   }
 

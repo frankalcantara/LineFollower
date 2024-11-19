@@ -8,8 +8,8 @@
 // Static member initialization
 int CourseMarkers::speed = 0;
 int CourseMarkers::lastMarkerState = 0;
-int CourseMarkers::markerStateHistory0 = 0;
-int CourseMarkers::markerStateHistory1 = 0;
+int CourseMarkers::previousMarkerState = 0;
+int CourseMarkers::oldMarkerState = 0;
 int CourseMarkers::currentMarkerState = 0;
 int CourseMarkers::leftMarkerDetected = 0;
 int CourseMarkers::rightMarkerDetected = 0;
@@ -119,11 +119,11 @@ void CourseMarkers::processMarkerSignals() {
 
   // Handle geometry changes
   if (lastMarkerState != currentMarkerState) {
-    if (currentMarkerState == 0 && lastMarkerState == 2 && markerStateHistory0 == 0) { handleFinishLine(); }
-    if (currentMarkerState == 0 && lastMarkerState == 1 && markerStateHistory0 == 0) { handleSpeedMode(); }
-    if (currentMarkerState == 0 && ((lastMarkerState == 3) || (markerStateHistory0 == 3) || (markerStateHistory1 == 3))) { handleIntersection(); }
-    markerStateHistory1 = markerStateHistory0;
-    markerStateHistory0 = lastMarkerState;
+    if (currentMarkerState == 0 && lastMarkerState == 2 && previousMarkerState == 0) { handleFinishLine(); }
+    if (currentMarkerState == 0 && lastMarkerState == 1 && previousMarkerState == 0) { handleSpeedMode(); }
+    if (currentMarkerState == 0 && ((lastMarkerState == 3) || (previousMarkerState == 3) || (oldMarkerState == 3))) { handleIntersection(); }
+    oldMarkerState = previousMarkerState;
+    previousMarkerState = lastMarkerState;
     lastMarkerState = currentMarkerState;
   }
 
@@ -144,9 +144,9 @@ void CourseMarkers::processMarkerSignals() {
 }
 
 void CourseMarkers::handleFinishLine() {
-  fin++;
+  lapCount++;
 
-  switch (fin) {
+  switch (lapCount) {
   case 2:
     if (!isStopSequenceActive) {
       isStopSequenceActive = true;

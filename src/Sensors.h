@@ -6,8 +6,8 @@
 
 class Sensors {
 private:
-    static int v_s_min[NUM_SENSORES];
-    static int v_s_max[NUM_SENSORES];
+    static int sensorMin[NUM_SENSORES];
+    static int sensorMax[NUM_SENSORES];
     static volatile int processedSensorValues[NUM_SENSORES];
     static boolean isLineDetected;
     static int currentLinePosition;

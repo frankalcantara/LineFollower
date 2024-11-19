@@ -9,8 +9,8 @@ private:
     // State variables
     static int speed;
     static int lastMarkerState;
-    static int markerStateHistory0;
-    static int markerStateHistory1;
+    static int previousMarkerState;
+    static int oldMarkerState;
     static int currentMarkerState;
     static int leftMarkerDetected;
     static int rightMarkerDetected;

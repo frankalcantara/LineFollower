@@ -12,7 +12,7 @@
 int currentSpeed = 0;
 bool isRobotStopped = false;
 bool isStopSequenceActive = false;
-int fin = 0;
+int lapCount = 0;
 bool isPrecisionMode = false;
 
 // Control parameters
@@ -98,7 +98,7 @@ void setup() {
     previousError = 0;
     filteredErrorRate = 0;
     currentSpeed = BASE_FAST;
-    fin = 0;
+    lapCount = 0;
 
     DEBUG_PRINTLN("Setup completed");
 }
