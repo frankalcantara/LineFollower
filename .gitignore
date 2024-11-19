@@ -40,3 +40,4 @@
 .vscode/launch.json
 .vscode/settings.json
 src/.vscode/settings.json
+.pio/build/uno/idedata.json
