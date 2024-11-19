@@ -1,0 +1,65 @@
+# RoboZero Modules Description
+
+As shown in Figure 1, RoboZero's architecture is organized into distinct layers, each responsible for specific aspects of the robot's operation.
+
+![Figure 1: RobotZero's Block Diagram](images/blockDiag.png){fig-alt="A diagram showing how modules are interconnected in RobotZero architecture." fig-align="center"}
+
+Let's examine each module and its key features:
+
+## Configuration Layer
+
+### config.h
+
+The configuration hub of the system, this module defines all crucial parameters including pin assignments, speed settings, and control constants. A notable feature is its use of conditional compilation (`#if DEBUG_LEVEL > 0`) to ensure zero overhead in normal operation mode, demonstrating our commitment to efficiency.
+
+### globals.h
+
+Manages global state variables that need to be accessed across different modules. While global variables are generally discouraged, here they serve a crucial role in maintaining real-time performance by avoiding function call overhead for frequently accessed states.
+
+### debug.h
+
+Implements a sophisticated debug message system that stores strings in Flash memory instead of RAM, using `PROGMEM` for optimal memory usage. This approach ensures that debug capabilities don't impact the robot's limited RAM resources.
+
+## Hardware Interface Layer
+
+### Sensors
+
+Manages six line sensors and two marker sensors through a calibration-based approach. The unique feature here is the weighted average calculation that provides precise positional data. The system maintains both raw and processed values, enabling real-time adjustments while preserving original readings for analysis.
+
+### MotorsDrivers
+
+Implements motor control using PWM, with a key feature being its ability to handle both forward and reverse motion through a single interface. The module includes built-in protection against invalid PWM values, ensuring safe operation even under software errors.
+
+### Peripherals
+
+Handles external interfaces including button input and LED status indication. Notable is its debounce implementation that maintains responsiveness while ensuring reliable button detection, essential for both operation and calibration phases.
+
+## Control Layer
+
+### CourseMarkers
+
+Processes track markers using a state machine approach to detect different patterns (finish line, speed mode changes, intersections). Its sophisticated detection system can differentiate between various marker combinations while maintaining reliable operation under varying light conditions.
+
+### ProfileManager
+
+Manages different operation profiles (analysis and speed modes). The key innovation here is its transparent speed value translation system, which allows the same base code to operate under different performance parameters without modification.
+
+## Debug Layer
+
+### Logger
+
+Implements a sophisticated logging system using circular buffers to maintain performance. A key feature is its ability to write to flash memory only during straight-line sections, ensuring logging doesn't interfere with critical control operations.
+
+### FlashManager
+
+Handles flash memory operations with built-in error checking and recovery mechanisms. Notable is its page-aligned writing system that maximizes flash memory lifespan while ensuring data integrity.
+
+### FlashReader
+
+Manages data retrieval through a structured protocol, including checksums for data validation. The module implements a multi-marker system to ensure reliable data transmission even under noisy serial connections.
+
+## Main Control
+
+### main.cpp
+
+The core control loop implementing PID-based line following. A significant feature is its non-blocking setup sequence that maintains system responsiveness during initialization and calibration. The module seamlessly integrates debug features when compiled with DEBUG_LEVEL \> 0 while maintaining optimal performance in normal operation.

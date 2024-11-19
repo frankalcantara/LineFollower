@@ -1,7 +1,6 @@
 ---
-title: "Operation"
+title: "Line Following Robot Operation"
 ---
-# Line Following Robot Operation
 
 The robot's operation is divided into two distinct configuration levels: build-time configuration through software compilation and runtime operation of RoboZero.
 
@@ -25,9 +24,9 @@ Data retrieval, available only in debug builds, occurs through a USB interface w
 
 The entire system prioritizes real-time performance while ensuring data collection doesn't interfere with the robot's primary line-following function. Error checking and recovery mechanisms are implemented throughout the system, from sensor reading validation to data storage verification, ensuring reliable operation even under challenging conditions.
 
-# Operating Procedure
+## Operating Procedure
 
-## Initial Setup
+### Initial Setup
 
 1. Place the robot near the course
 2. Power on the robot
@@ -36,7 +35,7 @@ The entire system prioritizes real-time performance while ensuring data collecti
    - Motors will be inactive
 4. After delay, LED turns off and robot is ready for calibration
 
-## Calibration Process
+### Calibration Process
 
 1. Press the start button for first calibration phase
    - LED will turn on
@@ -48,7 +47,7 @@ The entire system prioritizes real-time performance while ensuring data collecti
    - LED turns off
    - Robot waits for second button press
 
-## Operation Start
+### Operation Start
 
 1. Place robot on the track
 2. Press start button again to begin operation
@@ -59,7 +58,7 @@ The entire system prioritizes real-time performance while ensuring data collecti
    - PID control active with default parameters
    - Normal operating mode engaged
 
-## During Operation
+### During Operation
 
 The robot recognizes three marker patterns:
 1. Finish line marker (both sensors)
@@ -72,7 +71,7 @@ The robot recognizes three marker patterns:
 3. Intersection marker (both sensors)
    - Logged but no special action taken
 
-## Stop Sequence
+### Stop Sequence
 
 The robot will stop automatically when:
 1. Second finish line is detected
@@ -82,7 +81,7 @@ The robot will stop automatically when:
    - Final stop after 300ms
    - Motors power off
 
-## Data Retrieval (Debug Mode Only)
+### Data Retrieval (Debug Mode Only)
 
 If DEBUG_LEVEL > 0:
 1. When robot stops, flash memory is marked as ready
@@ -94,7 +93,7 @@ If DEBUG_LEVEL > 0:
    - Log ready flag is cleared
    - LED pattern stops
 
-## Error Recovery
+### Error Recovery
 
 If line is lost:
 1. Robot uses last valid position
@@ -102,7 +101,7 @@ If line is lost:
 3. PID controller attempts to recover
 4. Robot continues operation if line is found
 
-## Operating Modes
+### Operating Modes
 
 Two base operating speeds:
 1. Normal Mode (BASE_FAST):

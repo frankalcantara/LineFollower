@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Frank Coelho de Alcantara">
-<meta name="dcterms.date" content="2024-10-11">
 
-<title>Comprehensive Environment for Line-Following Robot Development</title>
+<title>RobotZero A Comprehensive Environment for Line-Following Robot Development - 3&nbsp; RoboZero Modules Description</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -32,6 +30,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./oper.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -73,11 +72,11 @@ ul.task-list li input[type="checkbox"] {
 
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="Comprehensive Environment for Line-Following Robot Development">
-<meta property="og:description" content="This project provides a foundational software platform for developing line-following robots.">
-<meta property="og:site_name" content="Comprehensive Environment for Line-Following Robot Development">
-<meta name="twitter:title" content="Comprehensive Environment for Line-Following Robot Development">
-<meta name="twitter:description" content="This project provides a foundational software platform for developing line-following robots.">
+<meta property="og:title" content="RobotZero A Comprehensive Environment for Line-Following Robot Development - 3&nbsp; RoboZero Modules Description">
+<meta property="og:description" content="">
+<meta property="og:site_name" content="RobotZero A Comprehensive Environment for Line-Following Robot Development">
+<meta name="twitter:title" content="RobotZero A Comprehensive Environment for Line-Following Robot Development - 3&nbsp; RoboZero Modules Description">
+<meta name="twitter:description" content="">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -90,7 +89,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">lineFollowerDocs</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./block.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RoboZero Modules Description</span></a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -105,7 +104,7 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Comprehensive Environment for Line-Following Robot Development</a> 
+      <a href="./">RobotZero A Comprehensive Environment for Line-Following Robot Development</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -120,8 +119,20 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">lineFollowerDocs</span></span></a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./oper.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Line Following Robot Operation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./block.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RoboZero Modules Description</span></span></a>
   </div>
 </li>
     </ul>
@@ -134,7 +145,33 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#quarto" id="toc-quarto" class="nav-link active" data-scroll-target="#quarto"><span class="header-section-number">0.1</span> Quarto</a></li>
+  <li><a href="#configuration-layer" id="toc-configuration-layer" class="nav-link active" data-scroll-target="#configuration-layer"><span class="header-section-number">3.1</span> Configuration Layer</a>
+  <ul class="collapse">
+  <li><a href="#config.h" id="toc-config.h" class="nav-link" data-scroll-target="#config.h"><span class="header-section-number">3.1.1</span> config.h</a></li>
+  <li><a href="#globals.h" id="toc-globals.h" class="nav-link" data-scroll-target="#globals.h"><span class="header-section-number">3.1.2</span> globals.h</a></li>
+  <li><a href="#debug.h" id="toc-debug.h" class="nav-link" data-scroll-target="#debug.h"><span class="header-section-number">3.1.3</span> debug.h</a></li>
+  </ul></li>
+  <li><a href="#hardware-interface-layer" id="toc-hardware-interface-layer" class="nav-link" data-scroll-target="#hardware-interface-layer"><span class="header-section-number">3.2</span> Hardware Interface Layer</a>
+  <ul class="collapse">
+  <li><a href="#sensors" id="toc-sensors" class="nav-link" data-scroll-target="#sensors"><span class="header-section-number">3.2.1</span> Sensors</a></li>
+  <li><a href="#motorsdrivers" id="toc-motorsdrivers" class="nav-link" data-scroll-target="#motorsdrivers"><span class="header-section-number">3.2.2</span> MotorsDrivers</a></li>
+  <li><a href="#peripherals" id="toc-peripherals" class="nav-link" data-scroll-target="#peripherals"><span class="header-section-number">3.2.3</span> Peripherals</a></li>
+  </ul></li>
+  <li><a href="#control-layer" id="toc-control-layer" class="nav-link" data-scroll-target="#control-layer"><span class="header-section-number">3.3</span> Control Layer</a>
+  <ul class="collapse">
+  <li><a href="#coursemarkers" id="toc-coursemarkers" class="nav-link" data-scroll-target="#coursemarkers"><span class="header-section-number">3.3.1</span> CourseMarkers</a></li>
+  <li><a href="#profilemanager" id="toc-profilemanager" class="nav-link" data-scroll-target="#profilemanager"><span class="header-section-number">3.3.2</span> ProfileManager</a></li>
+  </ul></li>
+  <li><a href="#debug-layer" id="toc-debug-layer" class="nav-link" data-scroll-target="#debug-layer"><span class="header-section-number">3.4</span> Debug Layer</a>
+  <ul class="collapse">
+  <li><a href="#logger" id="toc-logger" class="nav-link" data-scroll-target="#logger"><span class="header-section-number">3.4.1</span> Logger</a></li>
+  <li><a href="#flashmanager" id="toc-flashmanager" class="nav-link" data-scroll-target="#flashmanager"><span class="header-section-number">3.4.2</span> FlashManager</a></li>
+  <li><a href="#flashreader" id="toc-flashreader" class="nav-link" data-scroll-target="#flashreader"><span class="header-section-number">3.4.3</span> FlashReader</a></li>
+  </ul></li>
+  <li><a href="#main-control" id="toc-main-control" class="nav-link" data-scroll-target="#main-control"><span class="header-section-number">3.5</span> Main Control</a>
+  <ul class="collapse">
+  <li><a href="#main.cpp" id="toc-main.cpp" class="nav-link" data-scroll-target="#main.cpp"><span class="header-section-number">3.5.1</span> main.cpp</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -143,27 +180,14 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Comprehensive Environment for Line-Following Robot Development</h1>
-<p class="subtitle lead">This project provides a foundational software platform for developing line-following robots.</p>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RoboZero Modules Description</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Frank Coelho de Alcantara </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">October 11, 2024</p>
-    </div>
-  </div>
   
     
   </div>
@@ -173,11 +197,78 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="quarto" class="level2" data-number="0.1">
-<h2 data-number="0.1" class="anchored" data-anchor-id="quarto"><span class="header-section-number">0.1</span> Quarto</h2>
-<p>Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <a href="https://quarto.org" class="uri">https://quarto.org</a>.</p>
+<p>As shown in Figure 1, RoboZero’s architecture is organized into distinct layers, each responsible for specific aspects of the robot’s operation.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/blockDiag.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 1: RobotZero’s Block Diagram</figcaption>
+</figure>
+</div>
+<p>Let’s examine each module and its key features:</p>
+<section id="configuration-layer" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="configuration-layer"><span class="header-section-number">3.1</span> Configuration Layer</h2>
+<section id="config.h" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="config.h"><span class="header-section-number">3.1.1</span> config.h</h3>
+<p>The configuration hub of the system, this module defines all crucial parameters including pin assignments, speed settings, and control constants. A notable feature is its use of conditional compilation (<code>#if DEBUG_LEVEL &gt; 0</code>) to ensure zero overhead in normal operation mode, demonstrating our commitment to efficiency.</p>
+</section>
+<section id="globals.h" class="level3" data-number="3.1.2">
+<h3 data-number="3.1.2" class="anchored" data-anchor-id="globals.h"><span class="header-section-number">3.1.2</span> globals.h</h3>
+<p>Manages global state variables that need to be accessed across different modules. While global variables are generally discouraged, here they serve a crucial role in maintaining real-time performance by avoiding function call overhead for frequently accessed states.</p>
+</section>
+<section id="debug.h" class="level3" data-number="3.1.3">
+<h3 data-number="3.1.3" class="anchored" data-anchor-id="debug.h"><span class="header-section-number">3.1.3</span> debug.h</h3>
+<p>Implements a sophisticated debug message system that stores strings in Flash memory instead of RAM, using <code>PROGMEM</code> for optimal memory usage. This approach ensures that debug capabilities don’t impact the robot’s limited RAM resources.</p>
+</section>
+</section>
+<section id="hardware-interface-layer" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="hardware-interface-layer"><span class="header-section-number">3.2</span> Hardware Interface Layer</h2>
+<section id="sensors" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="sensors"><span class="header-section-number">3.2.1</span> Sensors</h3>
+<p>Manages six line sensors and two marker sensors through a calibration-based approach. The unique feature here is the weighted average calculation that provides precise positional data. The system maintains both raw and processed values, enabling real-time adjustments while preserving original readings for analysis.</p>
+</section>
+<section id="motorsdrivers" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="motorsdrivers"><span class="header-section-number">3.2.2</span> MotorsDrivers</h3>
+<p>Implements motor control using PWM, with a key feature being its ability to handle both forward and reverse motion through a single interface. The module includes built-in protection against invalid PWM values, ensuring safe operation even under software errors.</p>
+</section>
+<section id="peripherals" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3" class="anchored" data-anchor-id="peripherals"><span class="header-section-number">3.2.3</span> Peripherals</h3>
+<p>Handles external interfaces including button input and LED status indication. Notable is its debounce implementation that maintains responsiveness while ensuring reliable button detection, essential for both operation and calibration phases.</p>
+</section>
+</section>
+<section id="control-layer" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="control-layer"><span class="header-section-number">3.3</span> Control Layer</h2>
+<section id="coursemarkers" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored" data-anchor-id="coursemarkers"><span class="header-section-number">3.3.1</span> CourseMarkers</h3>
+<p>Processes track markers using a state machine approach to detect different patterns (finish line, speed mode changes, intersections). Its sophisticated detection system can differentiate between various marker combinations while maintaining reliable operation under varying light conditions.</p>
+</section>
+<section id="profilemanager" class="level3" data-number="3.3.2">
+<h3 data-number="3.3.2" class="anchored" data-anchor-id="profilemanager"><span class="header-section-number">3.3.2</span> ProfileManager</h3>
+<p>Manages different operation profiles (analysis and speed modes). The key innovation here is its transparent speed value translation system, which allows the same base code to operate under different performance parameters without modification.</p>
+</section>
+</section>
+<section id="debug-layer" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="debug-layer"><span class="header-section-number">3.4</span> Debug Layer</h2>
+<section id="logger" class="level3" data-number="3.4.1">
+<h3 data-number="3.4.1" class="anchored" data-anchor-id="logger"><span class="header-section-number">3.4.1</span> Logger</h3>
+<p>Implements a sophisticated logging system using circular buffers to maintain performance. A key feature is its ability to write to flash memory only during straight-line sections, ensuring logging doesn’t interfere with critical control operations.</p>
+</section>
+<section id="flashmanager" class="level3" data-number="3.4.2">
+<h3 data-number="3.4.2" class="anchored" data-anchor-id="flashmanager"><span class="header-section-number">3.4.2</span> FlashManager</h3>
+<p>Handles flash memory operations with built-in error checking and recovery mechanisms. Notable is its page-aligned writing system that maximizes flash memory lifespan while ensuring data integrity.</p>
+</section>
+<section id="flashreader" class="level3" data-number="3.4.3">
+<h3 data-number="3.4.3" class="anchored" data-anchor-id="flashreader"><span class="header-section-number">3.4.3</span> FlashReader</h3>
+<p>Manages data retrieval through a structured protocol, including checksums for data validation. The module implements a multi-marker system to ensure reliable data transmission even under noisy serial connections.</p>
+</section>
+</section>
+<section id="main-control" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="main-control"><span class="header-section-number">3.5</span> Main Control</h2>
+<section id="main.cpp" class="level3" data-number="3.5.1">
+<h3 data-number="3.5.1" class="anchored" data-anchor-id="main.cpp"><span class="header-section-number">3.5.1</span> main.cpp</h3>
+<p>The core control loop implementing PID-based line following. A significant feature is its non-blocking setup sequence that maintains system responsiveness during initialization and calibration. The module seamlessly integrates debug features when compiled with DEBUG_LEVEL &gt; 0 while maintaining optimal performance in normal operation.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -734,6 +825,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./oper.html" class="pagination-link" aria-label="Line Following Robot Operation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Line Following Robot Operation</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
 </div> <!-- /content -->
 <footer class="footer">
   <div class="nav-footer">

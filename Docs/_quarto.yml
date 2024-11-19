@@ -1,6 +1,6 @@
 project:
   type: book
-  output-dir: Docs
+  output-dir: _output
   resources:
     - "images/"
     - "styles/"
@@ -13,8 +13,8 @@ book:
   chapters:
     - index.qmd
     - oper.qmd
-    # - sintSem.qmd
-    # - app1.qmd
+    - block.qmd
+    - config_layer.qmd
     # - redux.qmd
     # - estredux.qmd
     # - equiv.qmd
@@ -26,7 +26,6 @@ book:
 
 format:
   html:
-    output-dir: Docs/_site
     theme:
       light: cosmo
       dark: [cosmo, theme-dark.scss]
@@ -41,5 +40,85 @@ format:
       open-graph: true
       reader-mode: true
   pdf:
-    output-dir: Docs/_pdf
-    documentclass: report
+    documentclass: scrreprt
+    papersize: a4paper
+    geometry:
+      - top=2.5cm
+      - bottom=2.5cm
+      - left=3cm
+      - right=2.5cm
+    fontsize: 11pt
+    toc-depth: 3
+    number-sections: true
+    colorlinks: true
+    latex-auto-install: true
+    bibliography: references.bib
+    toc-title: "Contents"
+    language: _language.yml
+    include-in-header:
+      text: |
+        \usepackage{fancyhdr}
+        \pagestyle{fancy}
+        \renewcommand{\headrulewidth}{1pt}  
+        \fancyhead[L]{\leftmark}  
+        \fancyhead[C]{} 
+        \fancyhead[R]{\thepage} 
+        \usepackage[brazilian, provide=*]{babel}  
+        \usepackage[brazilian=nohyphenation]{hyphsubst}
+        \addto\captionsbrazilian{\renewcommand{\contentsname}{Sumário}}
+        \fancyfoot{}  
+
+        \usepackage{graphicx}
+        \usepackage{epigraph}
+        \usepackage{xcolor}
+        \usepackage{listings}
+        \usepackage{float}
+        \usepackage{mathtools}
+        \usepackage{amsmath}
+        \usepackage{tikz}  % Inclusão do pacote TikZ
+        \usepackage{amssymb}
+        \usepackage{array}
+        \usepackage{qtree}
+        \usepackage{forest}
+        \usepackage{booktabs}
+        \usepackage{tcolorbox}
+        
+        % Definindo cores RGB personalizadas
+        \definecolor{contentbg}{rgb}{0.9, 0.9, 0.9}     % Cor do fundo do conteúdo
+        \definecolor{titlebg}{rgb}{0.2, 0.4, 0.8}          % Cor do fundo do título
+        
+        \tcbuselibrary{theorems}  % Carregar biblioteca fora do bloco tcbset
+        \tcbset{
+            myboxstyle/.style={
+                colback=contentbg,        % Cor de fundo do conteúdo
+                colframe=black,           % Cor da borda
+                coltitle=white,           % Cor do texto do título
+                colbacktitle=titlebg,     % Cor de fundo do título
+                fonttitle=\bfseries,      % Formatação do título
+                boxrule=0.5mm,            % Espessura da borda
+                width=\linewidth,         % Largura da caixa
+                arc=4mm                   % Arredondamento dos cantos
+            }
+        }
+        
+        \lstset{
+          language=Haskell,
+          basicstyle=\ttfamily\small,
+          keywordstyle=\color{blue},
+          commentstyle=\color{gray},
+          stringstyle=\color{red},
+          numbers=left,
+          numberstyle=\tiny\color{gray},
+          stepnumber=1,
+          numbersep=5pt,
+          frame=single,
+          showspaces=false,
+          showstringspaces=false,
+          breaklines=true,
+          breakatwhitespace=true,
+          tabsize=2
+        }
+        
+        \renewcommand{\floatpagefraction}{.8}
+        \renewcommand{\textfraction}{.1}
+  

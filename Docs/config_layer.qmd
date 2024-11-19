@@ -1,0 +1,236 @@
+# Configuration Layer
+
+The Configuration Layer serves as the foundation of the RobotZero system, providing centralized control over all system parameters. This layer plays a crucial role in both development and runtime operation, allowing fine-tuning of robot behaviour without modifying core logic. Its design prioritizes both flexibility and efficiency, using compile-time constants to ensure zero runtime overhead while maintaining high configurability.
+
+## Configuration Values (config.h)
+
+The config.h file is structured into logical sections, each handling specific aspects of the robot's configuration. Let's examine each section in detail:
+
+### Debug Configuration
+This section controls the debugging features of the system. The `DEBUG_LEVEL` setting determines the robot's operating mode and what features are compiled into the final binary.
+
+```cpp
+// Set to 1 for analysis mode, 2 for speed mode, or 0 for normal operation
+#ifndef DEBUG_LEVEL
+#define DEBUG_LEVEL 0
+#endif
+
+#if DEBUG_LEVEL > 0
+#include "DataStructures.h"  // Include debug-related structures
+
+// Debug configuration
+static constexpr uint8_t DEBUG_LAPS_MODE1 = 5;    // Analysis mode laps
+static constexpr uint8_t DEBUG_LAPS_MODE2 = 3;    // Speed mode laps
+
+// Logging parameters
+static constexpr uint16_t SAMPLE_RATE_STRAIGHT = 50;   // Sampling in straight lines
+static constexpr uint16_t SAMPLE_RATE_CURVE = 20;      // Sampling in curves
+static constexpr uint16_t LOG_BUFFER_SIZE = 64;        // Circular buffer size
+
+// Flash memory parameters
+static constexpr uint32_t FLASH_LOG_START = 0x1000;    // Log start address
+static constexpr uint16_t FLASH_PAGE_SIZE = 256;       // Flash page size
+static constexpr uint32_t FLASH_CONTROL_BYTE = 0x0800; // Control byte location
+static constexpr uint8_t FLASH_LOG_READY = 0xAA;       // Log ready indicator
+#endif
+```
+
+The debug configuration implements a conditional compilation system that ensures optimal performance in normal operation. When `DEBUG_LEVEL` is set to `0`, all debugging code is completely excluded from the final binary, resulting in no runtime overhead. Setting `DEBUG_LEVEL` to `1` activates the analysis mode, where the robot operates at moderate speeds and collects comprehensive data about its performance, including position errors, motor speeds, and **PID corrections**, completing `5` laps for detailed analysis. In speed mode, activated with `DEBUG_LEVEL 2`, the robot performs `3` laps at maximum speed while still collecting performance data, allowing for optimization of high-speed behaviour. The system adjusts its sampling rate based on track conditions - sampling more frequently in curves where behaviour is more dynamic, and at a lower rate in straight sections to conserve memory. All collected data is stored in a structured format in flash memory, organized to maximize data integrity and facilitate post-run analysis.
+
+The flash memory organization is carefully structured to maximize efficiency and reliability. The logging system begins storing data at address `0x1000` (`FLASH_LOG_START`), providing ample space for system data in lower memory addresses. Each page of flash memory is `256` bytes (`FLASH_PAGE_SIZE`), allowing efficient writing operations that balance between memory usage and write cycles. A control byte located at address 0x0800 (`FLASH_CONTROL_BYTE`) serves as a state indicator for the logging system. When this byte contains the value 0xAA (`FLASH_LOG_READY`), it signals that valid performance data is available for retrieval, ensuring proper synchronization between data logging and retrieval operations.
+
+### Pin Configuration
+Defines all hardware connections, centralizing pin assignments for easy modification and hardware revision control.
+
+```cpp
+// Only modify if changing physical robot connections
+static const uint8_t PIN_START_BUTTON = 11;      // Start/calibrate button
+static const uint8_t PIN_STATUS_LED = 13;        // Status LED
+static const uint8_t PIN_MOTOR_LEFT_FWD = 7;     // Left Motor Forward
+static const uint8_t PIN_MOTOR_LEFT_REV = 4;     // Left Motor Reverse
+static const uint8_t PIN_MOTOR_LEFT_PWM = 3;     // Left Motor Speed
+static const uint8_t PIN_MOTOR_RIGHT_FWD = 8;    // Right Motor Forward
+static const uint8_t PIN_MOTOR_RIGHT_REV = 9;    // Right Motor Reverse
+static const uint8_t PIN_MOTOR_RIGHT_PWM = 10;   // Right Motor Speed
+
+// Sensor pins
+static const uint8_t PIN_LINE_LEFT_EDGE = A6;    // Leftmost sensor
+static const uint8_t PIN_LINE_LEFT_MID = A5;
+static const uint8_t PIN_LINE_CENTER_LEFT = A4;
+static const uint8_t PIN_LINE_CENTER_RIGHT = A3;
+static const uint8_t PIN_LINE_RIGHT_MID = A2;
+static const uint8_t PIN_LINE_RIGHT_EDGE = A1;   // Rightmost sensor
+static const uint8_t PIN_MARKER_LEFT = A7;       // Left marker
+static const uint8_t PIN_MARKER_RIGHT = A0;      // Right marker
+```
+
+The pin configuration employs a systematic approach to hardware interface management. Each pin assignment is thoroughly documented with clear comments indicating its purpose, from motor control signals to sensor inputs, making hardware modifications and debugging straightforward. Related pins are logically grouped together - motor control pins are clustered by function (forward, reverse, and PWM for each motor), while sensor pins are arranged according to their physical layout on the robot (from left edge to right edge). The use of static const declarations for pin assignments not only makes the code more readable but also allows the compiler to optimize memory usage by storing these values in program memory rather than RAM. This approach maintains flexibility for hardware modifications while ensuring efficient runtime performance, as these values are resolved at compile time rather than being calculated during program execution.
+
+### Speed Parameters
+Defines the various speed levels used by the robot, providing a comprehensive speed control system.
+
+```cpp
+// Base speeds - do not modify without thorough testing
+static constexpr uint8_t SPEED_STOP = 0;       // Stopped
+static constexpr uint8_t SPEED_STARTUP = 80;   // Initial movement
+static constexpr uint8_t SPEED_TURN = 100;     // Turn speed
+static constexpr uint8_t SPEED_BRAKE = 120;    // Braking speed
+static constexpr uint8_t SPEED_CRUISE = 140;   // Medium speed
+static constexpr uint8_t SPEED_SLOW = 160;     // Precision mode
+static constexpr uint8_t SPEED_FAST = 180;     // High speed
+static constexpr uint8_t SPEED_BOOST = 200;    // Boost speed
+static constexpr uint8_t SPEED_MAX = 220;      // Maximum speed
+
+// Speed control parameters
+static constexpr uint8_t ACCELERATION_STEP = 25;   // Speed increase step
+static constexpr uint8_t BRAKE_STEP = 60;         // Speed decrease step
+static constexpr uint8_t TURN_SPEED = 120;        // Curve speed
+static constexpr uint8_t TURN_THRESHOLD = 45;     // Curve detection
+static constexpr uint8_t STRAIGHT_THRESHOLD = 20;  // Straight line detection
+static constexpr uint8_t BOOST_DURATION = 10;     // Boost time
+static constexpr uint8_t BOOST_INCREMENT = 20;    // Boost step
+```
+
+These speed constants and control parameters are extensively used throughout the codebase. The CourseMarkers class uses them to determine appropriate speeds for different track sections, with `TURN_THRESHOLD` and `STRAIGHT_THRESHOLD` helping identify track geometry. In the main control loop, these values drive the PID controller's response, with `ACCELERATION_STEP` and `BRAKE_STEP` ensuring smooth speed transitions. When `DEBUG_LEVEL` is greater than `0`, the *ProfileManager* modifies these base values according to the current operating mode, allowing for different performance profiles while maintaining the same core control logic.
+
+### Control Parameters
+Defines the PID controller and sensor processing parameters.
+
+```cpp
+// PID Control Parameters
+static constexpr float K_PROPORTIONAL_DEFAULT = 5.0f;
+static constexpr float K_DERIVATIVE_DEFAULT = 600.0f;
+static constexpr float FILTER_COEFFICIENT_DEFAULT = 0.6f;
+
+// Sensor Parameters
+static const uint8_t NUM_SENSORES = 6;
+static constexpr int16_t SENSOR_MAX_VALUE = 1023;
+static constexpr int16_t SENSOR_MIN_VALUE = 0;
+static constexpr int16_t SENSOR_THRESHOLD = 120;
+
+// Sensor Weights
+static constexpr float SENSOR_WEIGHT_S1 = -2.5f;  // Far left
+static constexpr float SENSOR_WEIGHT_S2 = -1.2f;  // Left
+static constexpr float SENSOR_WEIGHT_S3 = -0.6f;  // Center-left
+static constexpr float SENSOR_WEIGHT_S4 = 0.6f;   // Center-right
+static constexpr float SENSOR_WEIGHT_S5 = 1.2f;   // Right
+static constexpr float SENSOR_WEIGHT_S6 = 2.5f;   // Far right
+```
+
+The control system parameters represent the core of the robot's line-following behaviour. The PID controller uses carefully tuned constants, with a proportional gain (`K_PROPORTIONAL_DEFAULT`) of `5.0` providing immediate response to position errors, while the high derivative gain (`K_DERIVATIVE_DEFAULT`) of `600.0` helps predict and dampen oscillations. A filter coefficient of `0.6` balances between noise reduction and response time in the derivative calculation. 
+
+The sensor array consists of six sensors (`NUM_SENSORES`), each providing analog readings from `0` to `1023` (`SENSOR_MIN_VALUE` to `SENSOR_MAX_VALUE`). A threshold value of `120` helps distinguish between line and background surface conditions. The sensor weights are particularly crucial, implementing a distributed sensing system where outer sensors (`±2.5`) have greater influence than inner ones (`±0.6`), creating a non-linear response that enhances stability in straight lines while maintaining sensitivity to curves. These weights are asymmetrical around the center point, allowing the robot to detect and respond to position changes with increasing urgency as it deviates further from the line. When processed together in the main control loop, these parameters enable the robot to maintain precise line following while adapting to various track conditions and geometries.
+
+### Timing Parameters
+Controls various timing aspects of the robot's operation.
+
+```cpp
+// Delays and Timings
+static const uint16_t SETUP_DELAY = 600;           // Initial setup
+static const uint16_t CALIBRATION_SAMPLES = 400;   // Calibration precision
+static const uint8_t CALIBRATION_DELAY = 30;       // Sample interval
+static const uint16_t STOP_DELAY = 300;            // Final stop timing
+static const uint16_t DEBOUNCE_DELAY = 50;         // Button debounce
+```
+
+The timing parameters, all specified in milliseconds, govern critical operational sequences of the robot. The `SETUP_DELAY` of `600ms` allows the system to stabilize after power-up, ensuring all sensors and components are ready for operation. During calibration, the system takes `400` samples (`CALIBRATION_SAMPLES`) from each sensor, with a `30ms` interval (`CALIBRATION_DELAY`) between samples, providing a comprehensive baseline for sensor readings while balancing between accuracy and calibration time - resulting in a total calibration period of approximately `12 seconds`. When the robot detects its final lap marker, it initiates a controlled stop sequence lasting `300ms` (`STOP_DELAY`), allowing for smooth deceleration. Button inputs are processed with a `50ms` debounce period (`DEBOUNCE_DELAY`), effectively filtering out mechanical noise and contact bounce while maintaining responsive user interaction. 
+
+These timing values were established during the November 2024 competition where RoboZero secured second place, proving their effectiveness under competitive conditions.
+
+## Global Variables Management (globals.h)
+
+The `globals.h` file represents a strategic decision in RobotZero's architecture, implementing a carefully selected set of global variables that require system-wide access. While global variables are generally discouraged in software development, their use here is justified by the real-time nature of the system and the Arduino Nano's limited resources.
+
+```cpp
+#ifndef GLOBALS_H
+#define GLOBALS_H
+
+// Global control variables
+extern int currentSpeed;             // Base speed
+extern bool isRobotStopped;          // Robot stopped state
+extern bool isStopSequenceActive;    // Stopping sequence active
+extern int lapCount;                 // End marker counter
+extern bool isPrecisionMode;         // Slow mode active
+
+#endif // GLOBALS_H
+```
+
+The `currentSpeed` variable serves as the base speed reference for the entire system. It is modified by various components including the `CourseMarkers` class during turns, the main control loop during PID corrections, and the `ProfileManager` when operating in debug modes. By maintaining this as a global variable, we avoid the overhead of function calls and parameter passing in time-critical control loops.
+
+The robot's state is tracked through three critical boolean flags. `isRobotStopped` indicates when the robot has completed its run or encountered a stop condition, allowing all components to safely cease operations. `isStopSequenceActive` manages the controlled deceleration process, triggered when the robot reaches its final lap, ensuring smooth and precise stopping. The `isPrecisionMode` flag enables the system to switch between normal and precision operation modes, affecting speed calculations and control parameters throughout the system.
+
+The `lapCount` variable keeps track of completed laps, crucial for both normal operation and debugging modes. In normal mode, it triggers the stop sequence after one lap, while in debug modes (controlled by `DEBUG_LEVEL`), it follows the specified number of laps (`5` for analysis mode, `3` for speed mode).
+
+All these variables are declared as external (`extern`) in the header file, with their actual definitions residing in `main.cpp`. This approach maintains proper encapsulation while allowing necessary access across the system. Each variable is initialized at system startup and modified only in specific, well-defined circumstances, ensuring predictable behaviour despite their global nature.
+
+## Debug System Configuration (debug.h)
+
+The `debug.h` file implements an efficient debugging system that provides comprehensive diagnostic information without compromising the robot's performance. The system's most notable feature is its use of **Flash memory for string storage**, preserving valuable RAM for critical operations.
+
+```cpp
+#ifndef DEBUG_H
+#define DEBUG_H
+
+#include "config.h"
+#include <avr/pgmspace.h>
+
+// Store debug messages in Flash memory instead of RAM
+const char DEBUG_BASE[] PROGMEM = "Base: ";
+const char DEBUG_ERROR[] PROGMEM = " Error: ";
+const char DEBUG_CORRECTION[] PROGMEM = " Correction: ";
+const char DEBUG_GEOMETRY[] PROGMEM = "Geometry: ";
+const char DEBUG_RIGHT_MARKER[] PROGMEM = "rightMarkerDetected: ";
+const char DEBUG_LEFT_MARKER[] PROGMEM = " leftMarkerDetected: ";
+const char DEBUG_A0[] PROGMEM = " A0: ";
+const char DEBUG_A7[] PROGMEM = " A7: ";
+const char DEBUG_SLOW_MODE[] PROGMEM = "Slow mode activated";
+const char DEBUG_FAST_MODE[] PROGMEM = "Fast mode activated";
+const char DEBUG_INTERSECTION[] PROGMEM = "Intersection detected";
+const char DEBUG_SETUP_START[] PROGMEM = "Starting setup";
+const char DEBUG_SETUP_COMPLETE[] PROGMEM = "Setup completed";
+```
+
+These string constants are stored in program memory using the `PROGMEM` attribute. This approach saves precious RAM space on the Arduino Nano, which only has `2KB` available. To facilitate reading these stored strings, the system implements a helper function:
+
+```cpp
+// Helper function to print strings from Flash
+inline void debugPrintFlash(const char* str) {
+    char c;
+    while ((c = pgm_read_byte(str++))) {
+        Serial.write(c);
+    }
+}
+```
+
+The system provides a set of debugging macros that are completely eliminated when debugging is disabled. These macros are defined based on the `DEBUG_LEVEL` configuration:
+
+```cpp
+// Debug macros - only active when DEBUG_LEVEL > 0
+#if DEBUG_LEVEL > 0
+#define DEBUG_BEGIN(x) Serial.begin(x)
+#define DEBUG_PRINT(x) debugPrintFlash(x)
+#define DEBUG_PRINTLN(x) do { debugPrintFlash(x); Serial.println(); } while(0)
+#define DEBUG_PRINT_VAL(x) Serial.print(x)
+#define DEBUG_PRINTLN_VAL(x) Serial.println(x)
+#else
+#define DEBUG_BEGIN(x)
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+#define DEBUG_PRINT_VAL(x)
+#define DEBUG_PRINTLN_VAL(x)
+#endif
+```
+
+When DEBUG_LEVEL is `0`, these macros expand to nothing, ensuring zero overhead in the compiled code. When debugging is enabled, they provide different printing capabilities: `DEBUG_PRINT` and `DEBUG_PRINTLN` handle Flash-stored strings, while `DEBUG_PRINT_VAL` and `DEBUG_PRINTLN_VAL` handle direct value output. The do-while construct in `DEBUG_PRINTLN` ensures proper behaviour when the macro is used in if-else statements.
+
+In practice, these macros are used throughout the codebase to provide diagnostic information. For example, during sensor readings:
+
+```cpp
+DEBUG_PRINT("rightMarkerDetected: ");
+DEBUG_PRINT_VAL(rightMarkerDetected);
+DEBUG_PRINT(" leftMarkerDetected: ");
+DEBUG_PRINT_VAL(leftMarkerDetected);
+DEBUG_PRINTLN("");
+```
+
+The system outputs debug information at `115200` baud when enabled, allowing real-time monitoring of the robot's behaviour while maintaining efficient execution. 
