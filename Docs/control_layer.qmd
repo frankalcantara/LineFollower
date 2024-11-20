@@ -1,0 +1,324 @@
+# Control Layer Implementation
+
+The Control Layer forms the decision-making core of RobotZero, managing the robot's behaviour in response to sensor inputs and track conditions. This layer translates raw sensor data into actionable controls, implementing the robot's core line-following logic while managing special track features like markers and intersections. Operating between the Hardware Interface Layer and the Main Control system, it ensures smooth and predictable robot behaviour under varying conditions.
+
+The `CourseMarkers` class represents the primary control component, implementing track feature detection and corresponding behaviour adjustments. This class processes marker sensor data to identify track features and manages the robot's response to these features, including speed changes, lap counting, and precision mode transitions. Through its state machine implementation, it ensures reliable detection of track features and smooth transitions between different operating modes.
+
+The `ProfileManager` class complements the control system by managing operation profiles and parameters based on the current debug level. When `DEBUG_LEVEL` is greater than `0`, it provides different speed and control parameter sets optimized for either analysis (`DEBUG_LEVEL = 1`) or high-speed performance (`DEBUG_LEVEL = 2`). This class enables the robot to maintain consistent control logic while operating under different performance requirements, making it an essential component for both development and competition scenarios.
+
+## CourseMarkers Implementation
+
+The CourseMarkers class manages track feature detection and robot behaviour through a state-based approach:
+
+``` cpp
+class CourseMarkers {
+private:
+    // State variables
+    static int speed;
+    static int lastMarkerState;
+    static int previousMarkerState;
+    static int oldMarkerState;
+    static int currentMarkerState;
+    static int16_t leftMarkerDetected;   
+    static int16_t rightMarkerDetected;  
+
+    // Speed control variables
+    static bool isTurning;
+    static bool isExitingTurn;
+    static uint8_t boostCountdown;
+
+    // Timers for precise control
+    static Timer stopTimer;
+    static Timer slowdownTimer;
+
+    // Internal methods
+    static void readCourseMarkers();
+    static void handleFinishLine();
+    static void handleSpeedMode();
+    static void handleIntersection();
+
+public:
+    // Public methods
+    static void processMarkerSignals();
+    static int speedControl(int error);
+};
+```
+
+The marker detection system operates through the `readCourseMarkers` method, which processes analog readings from dedicated marker sensors:
+
+``` cpp
+void CourseMarkers::readCourseMarkers() {
+    leftMarkerDetected = analogRead(PIN_MARKER_LEFT);
+    rightMarkerDetected = analogRead(PIN_MARKER_RIGHT);
+
+    bool ledState = false;
+
+    if (leftMarkerDetected > MARKER_DETECTION_THRESHOLD) {
+        leftMarkerDetected = 0;
+    }
+    else {
+        leftMarkerDetected = 1;
+        ledState = true;
+    }
+
+    if (rightMarkerDetected > MARKER_DETECTION_THRESHOLD) {
+        rightMarkerDetected = 0;
+    }
+    else {
+        rightMarkerDetected = 1;
+        ledState = true;
+    }
+
+    digitalWrite(PIN_STATUS_LED, ledState);
+}
+```
+
+Speed control is managed through a system that takes into account the robot's current state and track conditions:
+
+``` cpp
+int CourseMarkers::speedControl(int error) {
+    bool curve_detected = abs(error) > TURN_THRESHOLD;
+    bool straight_detected = abs(error) < STRAIGHT_THRESHOLD;
+    int target_speed;
+
+    if (curve_detected) {
+        isTurning = true;
+        isExitingTurn = false;
+        target_speed = TURN_SPEED;
+    }
+    else if (straight_detected) {
+        if (isTurning) {
+            isExitingTurn = true;
+            boostCountdown = BOOST_DURATION;
+        }
+        isTurning = false;
+        target_speed = isPrecisionMode ? SPEED_SLOW : BASE_FAST;
+    }
+    else {
+        target_speed = map(abs(error),
+            STRAIGHT_THRESHOLD,
+            TURN_THRESHOLD,
+            (isPrecisionMode ? SPEED_SLOW : BASE_FAST),
+            TURN_SPEED);
+    }
+
+    if (isExitingTurn && boostCountdown > 0 && !isPrecisionMode) {
+        target_speed = min(255, target_speed + 30);
+        boostCountdown--;
+    }
+
+    int step = (target_speed > currentSpeed) ? ACCELERATION_STEP : BRAKE_STEP;
+
+    if (abs(target_speed - currentSpeed) <= step) {
+        currentSpeed = target_speed;
+    }
+    else {
+        currentSpeed += (target_speed > currentSpeed) ? step : -step;
+    }
+
+    return constrain(currentSpeed, TURN_SPEED, 
+                    (isPrecisionMode ? SPEED_SLOW : BASE_FAST));
+}
+```
+
+The `processMarkerSignals` method ties everything together, managing the robot's response to detected markers:
+
+``` cpp
+void CourseMarkers::processMarkerSignals() {
+    readCourseMarkers();
+
+    if ((leftMarkerDetected == 0) && (rightMarkerDetected == 0)) 
+        currentMarkerState = 0;
+    if ((leftMarkerDetected == 1) && (rightMarkerDetected == 0)) 
+        currentMarkerState = 1;
+    if ((leftMarkerDetected == 0) && (rightMarkerDetected == 1)) 
+        currentMarkerState = 2;
+    if ((leftMarkerDetected == 1) && (rightMarkerDetected == 1)) 
+        currentMarkerState = 3;
+
+    if (lastMarkerState != currentMarkerState) {
+        if (currentMarkerState == 0 && lastMarkerState == 2 && 
+            previousMarkerState == 0) {
+            handleFinishLine();
+        }
+        if (currentMarkerState == 0 && lastMarkerState == 1 && 
+            previousMarkerState == 0) {
+            handleSpeedMode();
+        }
+        if (currentMarkerState == 0 && ((lastMarkerState == 3) || 
+            (previousMarkerState == 3) || (oldMarkerState == 3))) {
+            handleIntersection();
+        }
+        oldMarkerState = previousMarkerState;
+        previousMarkerState = lastMarkerState;
+        lastMarkerState = currentMarkerState;
+    }
+
+    if (isStopSequenceActive && !isRobotStopped) {
+        if (!slowdownTimer.Expired() && currentSpeed > SPEED_BRAKE) {
+            currentSpeed = SPEED_BRAKE;
+        }
+        else if (stopTimer.Expired()) {
+            currentSpeed = 0;
+            MotorDriver::setMotorsPower(0, 0);
+            isRobotStopped = true;
+        }
+    }
+}
+```
+
+The state machine implementation uses a combination of current and historical marker states to reliably detect track features and transitions. The system maintains four state variables:
+
+`currentMarkerState`: The present state based on marker sensors; `lastMarkerState`: The immediately previous state; `previousMarkerState`: The state before the last; `oldMarkerState`: The third previous state.
+
+Each marker state can be one of four conditions:
+
+`0`: No markers detected (both sensors reading 0);
+
+`1`: Left marker only (left sensor = 1, right sensor = 0);
+
+`2`: Right marker only (left sensor = 0, right sensor = 1);
+
+`3`: Both markers (both sensors reading 1);
+
+The state transitions trigger specific behaviors:
+
+-   Finish Line Detection: Identified by the sequence \[0 → 2 → 0\], representing a clean pass over the right marker;
+
+-   Speed Mode Change: Detected by \[0 → 1 → 0\], indicating a left marker pass;
+
+-   Intersection Detection: Triggered by any sequence containing state 3 (both markers) within the last three states.
+
+This multi-state history approach helps filter out false readings and ensures reliable feature detection even at high speeds or under varying light conditions. Each state change is processed only once, and the system maintains proper operation even when markers are detected in rapid succession.
+
+## ProfileManager Implementation
+
+The ProfileManager serves as RobotZero's configuration system for different operating modes, providing two distinct profiles: one optimized for analysis and another for high-speed performance. This implementation is entirely conditional, only compiled when `DEBUG_LEVEL` is greater than `0`, ensuring zero overhead during normal operation.
+
+``` cpp
+class ProfileManager {
+public:
+    // Initialize profile manager
+    static void initialize(DebugMode mode);
+
+    // Get current debug mode
+    static DebugMode getCurrentMode();
+
+    // Get speed value based on original speed constant
+    static uint8_t getSpeedValue(uint8_t defaultSpeed);
+
+    // Get PID parameters
+    static float getKP(float defaultValue);
+    static float getKD(float defaultValue);
+    static float getFilterCoefficient(float defaultValue);
+
+    // Get acceleration parameters
+    static uint8_t getAccelerationStep();
+    static uint8_t getBrakeStep();
+    static uint8_t getTurnSpeed();
+    static uint8_t getTurnThreshold();
+    static uint8_t getStraightThreshold();
+    static uint8_t getBoostDuration();
+    static uint8_t getBoostIncrement();
+
+private:
+    static DebugMode currentMode;
+    static const SpeedProfile* activeProfile;
+
+    static const SpeedProfile ANALYSIS_PROFILE;
+    static const SpeedProfile SPEED_PROFILE;
+
+    static void setActiveProfile(DebugMode mode);
+    static uint8_t validateSpeed(uint8_t speed);
+};
+```
+
+The system is built around two predefined profiles, each optimized for specific purposes:
+
+``` cpp
+const SpeedProfile ProfileManager::ANALYSIS_PROFILE = {
+    // Speed settings - Conservative for analysis
+    .speedStop = 0,
+    .speedStartup = 60,    // Slower startup
+    .speedTurn = 80,       // Careful turns
+    .speedBrake = 90,      // Gentle braking
+    .speedCruise = 100,    // Moderate cruising
+    .speedSlow = 120,      // Moderate slow speed
+    .speedFast = 140,      // Moderate fast speed
+    .speedBoost = 160,     // Moderate boost
+    .speedMax = 180,       // Limited top speed
+
+    // Control parameters - Smooth operation
+    .accelerationStep = 15, // Gentle acceleration
+    .brakeStep = 40,       // Moderate braking
+    .turnSpeed = 80,       // Conservative turns
+    .turnThreshold = 50,   // Earlier turn detection
+    .straightThreshold = 25, // Stricter straight detection
+    .boostDuration = 8,    // Short boost
+    .boostIncrement = 15,  // Gentle boost
+
+    // PID parameters - Stable control
+    .kProportional = 4.0f,
+    .kDerivative = 500.0f,
+    .filterCoefficient = 0.5f
+};
+
+const SpeedProfile ProfileManager::SPEED_PROFILE = {
+    // Speed settings - Aggressive for performance
+    .speedStop = 0,
+    .speedStartup = 100,   // Quick startup
+    .speedTurn = 120,      // Fast turns
+    .speedBrake = 140,     // Strong braking
+    .speedCruise = 160,    // Fast cruising
+    .speedSlow = 180,      // Fast slow mode
+    .speedFast = 200,      // High speed
+    .speedBoost = 220,     // Strong boost
+    .speedMax = 255,       // Maximum speed
+
+    // Control parameters - Performance focused
+    .accelerationStep = 35, // Quick acceleration
+    .brakeStep = 70,       // Strong braking
+    .turnSpeed = 140,      // Fast turns
+    .turnThreshold = 40,   // Later turn detection
+    .straightThreshold = 15, // Quicker straight detection
+    .boostDuration = 12,   // Longer boost
+    .boostIncrement = 25,  // Strong boost
+
+    // PID parameters - Aggressive control
+    .kProportional = 6.0f,
+    .kDerivative = 700.0f,
+    .filterCoefficient = 0.7f
+};
+```
+
+> **Implementation Note:**  
+> TODO: These variables should be transferred to macros or constexpr's in the configuration layer, maintaining the system's design principles of compile-time optimization and centralized configuration.
+
+The translation between default values and profile-specific values is handled through the `getSpeedValue` method:
+
+``` cpp
+uint8_t ProfileManager::getSpeedValue(uint8_t defaultSpeed) {
+    if (activeProfile == nullptr) {
+        return defaultSpeed;
+    }
+
+    // Map original speed constants to profile values
+    if (defaultSpeed == SPEED_STOP) return activeProfile->speedStop;
+    if (defaultSpeed == SPEED_STARTUP) return activeProfile->speedStartup;
+    if (defaultSpeed == SPEED_TURN) return activeProfile->speedTurn;
+    if (defaultSpeed == SPEED_BRAKE) return activeProfile->speedBrake;
+    if (defaultSpeed == SPEED_CRUISE) return activeProfile->speedCruise;
+    if (defaultSpeed == SPEED_SLOW) return activeProfile->speedSlow;
+    if (defaultSpeed == SPEED_FAST) return activeProfile->speedFast;
+    if (defaultSpeed == SPEED_BOOST) return activeProfile->speedBoost;
+    if (defaultSpeed == SPEED_MAX) return activeProfile->speedMax;
+
+    return validateSpeed(defaultSpeed);
+}
+```
+
+The Analysis Profile is designed for development and testing, with conservative speeds and gentle transitions. It prioritizes stability and predictability over raw speed, making it ideal for collecting performance data and tuning control parameters. All speed values are reduced, acceleration is gentler, and the PID parameters are tuned for stability.
+
+The Speed Profile, in contrast, is optimized for maximum performance. It uses aggressive speed settings, quick transitions, and more responsive control parameters. The PID constants are increased for faster response, and the thresholds are adjusted to maintain control at higher speeds. These profiles have not yet been tested in competition conditions.
+
+The `ProfileManager` ensures smooth operation by validating all speed values and providing fallback behaviour when no profile is active. When DEBUG_LEVEL is 0, the entire `ProfileManager` code is excluded from compilation, maintaining the efficiency of the production code.
