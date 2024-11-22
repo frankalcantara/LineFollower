@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>RobotZero A Comprehensive Environment for Line-Following Robot Development - 4&nbsp; Configuration Layer</title>
+<title>RobotZero - 4&nbsp; Configuration Layer</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,6 +64,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./control_layer.html" rel="next">
 <link href="./block.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -75,7 +76,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -106,10 +107,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="RobotZero A Comprehensive Environment for Line-Following Robot Development - 4&nbsp; Configuration Layer">
+<meta property="og:title" content="RobotZero - 4&nbsp; Configuration Layer">
 <meta property="og:description" content="">
-<meta property="og:site_name" content="RobotZero A Comprehensive Environment for Line-Following Robot Development">
-<meta name="twitter:title" content="RobotZero A Comprehensive Environment for Line-Following Robot Development - 4&nbsp; Configuration Layer">
+<meta property="og:site_name" content="RobotZero">
+<meta name="twitter:title" content="RobotZero - 4&nbsp; Configuration Layer">
 <meta name="twitter:description" content="">
 <meta name="twitter:card" content="summary">
 </head>
@@ -138,8 +139,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">RobotZero A Comprehensive Environment for Line-Following Robot Development</a> 
+      <a href="./">RobotZero</a> 
         <div class="sidebar-tools-main">
+    <a href="https://github.com/frankalcantara/linefollower" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
     </div>
@@ -175,6 +177,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Configuration Layer</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./control_layer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Control Layer Implementation</span></span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -196,7 +204,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#global-variables-management-globals.h" id="toc-global-variables-management-globals.h" class="nav-link" data-scroll-target="#global-variables-management-globals.h"><span class="header-section-number">4.2</span> Global Variables Management (globals.h)</a></li>
   <li><a href="#debug-system-configuration-debug.h" id="toc-debug-system-configuration-debug.h" class="nav-link" data-scroll-target="#debug-system-configuration-debug.h"><span class="header-section-number">4.3</span> Debug System Configuration (debug.h)</a></li>
   </ul>
-</nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/config_layer.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -340,7 +348,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="global-variables-management-globals.h" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="global-variables-management-globals.h"><span class="header-section-number">4.2</span> Global Variables Management (globals.h)</h2>
-<p>The <code>globals.h</code> file represents a strategic decision in RobotZero’s architecture, implementing a carefully selected set of global variables that require system-wide access. While global variables are generally discouraged in software development, their use here is justified by the real-time nature of the system and the Arduino Nano’s limited resources.</p>
+<p>The <code>globals.h</code> file represents a strategic decision in RobotZero’s architecture, implementing a carefully selected set of global variables that require system-wide access. While global variables are generally discouraged in software development, their use here is justified by the real-time nature of the system and the Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>)’s limited resources.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef GLOBALS_H</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define GLOBALS_H</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -380,7 +388,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">char</span> DEBUG_INTERSECTION<span class="op">[]</span> PROGMEM <span class="op">=</span> <span class="st">"Intersection detected"</span><span class="op">;</span></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">char</span> DEBUG_SETUP_START<span class="op">[]</span> PROGMEM <span class="op">=</span> <span class="st">"Starting setup"</span><span class="op">;</span></span>
 <span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">char</span> DEBUG_SETUP_COMPLETE<span class="op">[]</span> PROGMEM <span class="op">=</span> <span class="st">"Setup completed"</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>These string constants are stored in program memory using the <code>PROGMEM</code> attribute. This approach saves precious RAM space on the Arduino Nano, which only has <code>2KB</code> available. To facilitate reading these stored strings, the system implements a helper function:</p>
+<p>These string constants are stored in program memory using the <code>PROGMEM</code> attribute. This approach saves precious RAM space on the Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>), which only has <code>2KB</code> available. To facilitate reading these stored strings, the system implements a helper function:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Helper function to print strings from Flash</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="dt">void</span> debugPrintFlash<span class="op">(</span><span class="at">const</span> <span class="dt">char</span><span class="op">*</span> str<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> c<span class="op">;</span></span>
@@ -403,7 +411,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DEBUG_PRINT_VAL</span><span class="op">(</span>x<span class="op">)</span></span>
 <span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DEBUG_PRINTLN_VAL</span><span class="op">(</span>x<span class="op">)</span></span>
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>When DEBUG_LEVEL is <code>0</code>, these macros expand to nothing, ensuring zero overhead in the compiled code. When debugging is enabled, they provide different printing capabilities: <code>DEBUG_PRINT</code> and <code>DEBUG_PRINTLN</code> handle Flash-stored strings, while <code>DEBUG_PRINT_VAL</code> and <code>DEBUG_PRINTLN_VAL</code> handle direct value output. The do-while construct in <code>DEBUG_PRINTLN</code> ensures proper behaviour when the macro is used in if-else statements.</p>
+<p>When <code>DEBUG_LEVEL</code> is <code>0</code>, these macros expand to nothing, ensuring zero overhead in the compiled code. When debugging is enabled, they provide different printing capabilities: <code>DEBUG_PRINT</code> and <code>DEBUG_PRINTLN</code> handle Flash-stored strings, while <code>DEBUG_PRINT_VAL</code> and <code>DEBUG_PRINTLN_VAL</code> handle direct value output. The do-while construct in <code>DEBUG_PRINTLN</code> ensures proper behaviour when the macro is used in if-else statements.</p>
 <p>In practice, these macros are used throughout the codebase to provide diagnostic information. For example, during sensor readings:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>DEBUG_PRINT<span class="op">(</span><span class="st">"rightMarkerDetected: "</span><span class="op">);</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>DEBUG_PRINT_VAL<span class="op">(</span>rightMarkerDetected<span class="op">);</span></span>
@@ -641,7 +649,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/frankalcantara\.com");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -976,6 +984,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="./control_layer.html" class="pagination-link" aria-label="Control Layer Implementation">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Control Layer Implementation</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
@@ -986,7 +997,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>   
     <div class="nav-footer-center">
 <p>Copyright © 2024 Frank de Alcantara</p>
-</div>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/config_layer.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>

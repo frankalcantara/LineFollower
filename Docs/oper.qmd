@@ -30,7 +30,7 @@ The entire system prioritizes real-time performance while ensuring data collecti
 
 1. Place the robot near the course
 2. Power on the robot
-3. Wait for initial setup delay (600ms)
+3. Wait for initial setup delay (`600ms`)
    - Status LED will be on during this period
    - Motors will be inactive
 4. After delay, LED turns off and robot is ready for calibration

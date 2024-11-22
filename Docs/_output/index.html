@@ -9,7 +9,7 @@
 <meta name="author" content="Frank Coelho de Alcantara">
 <meta name="dcterms.date" content="2024-10-11">
 
-<title>RobotZero A Comprehensive Environment for Line-Following Robot Development</title>
+<title>RobotZero</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -43,7 +43,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -74,11 +74,11 @@ ul.task-list li input[type="checkbox"] {
 
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="RobotZero A Comprehensive Environment for Line-Following Robot Development">
-<meta property="og:description" content="This project provides a foundational software platform for developing line-following robots.">
-<meta property="og:site_name" content="RobotZero A Comprehensive Environment for Line-Following Robot Development">
-<meta name="twitter:title" content="RobotZero A Comprehensive Environment for Line-Following Robot Development">
-<meta name="twitter:description" content="This project provides a foundational software platform for developing line-following robots.">
+<meta property="og:title" content="RobotZero">
+<meta property="og:description" content="A Comprehensive Environment for Line-Following Robot Development">
+<meta property="og:site_name" content="RobotZero">
+<meta name="twitter:title" content="RobotZero">
+<meta name="twitter:description" content="A Comprehensive Environment for Line-Following Robot Development">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -106,8 +106,9 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">RobotZero A Comprehensive Environment for Line-Following Robot Development</a> 
+      <a href="./">RobotZero</a> 
         <div class="sidebar-tools-main">
+    <a href="https://github.com/frankalcantara/linefollower" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
     </div>
@@ -143,6 +144,12 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Configuration Layer</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./control_layer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Control Layer Implementation</span></span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -153,19 +160,19 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-platform-arduino-nano" id="toc-the-platform-arduino-nano" class="nav-link active" data-scroll-target="#the-platform-arduino-nano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano</a></li>
+  <li><a href="#the-platform-arduino-nano-arduinonano" id="toc-the-platform-arduino-nano-arduinonano" class="nav-link active" data-scroll-target="#the-platform-arduino-nano-arduinonano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>)</a></li>
   <li><a href="#project-overview" id="toc-project-overview" class="nav-link" data-scroll-target="#project-overview"><span class="header-section-number">0.2</span> Project Overview</a></li>
   <li><a href="#why-c" id="toc-why-c" class="nav-link" data-scroll-target="#why-c"><span class="header-section-number">0.3</span> Why C++?</a></li>
   </ul>
-</nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">RobotZero A Comprehensive Environment for Line-Following Robot Development</h1>
-<p class="subtitle lead">This project provides a foundational software platform for developing line-following robots.</p>
+<h1 class="title">RobotZero</h1>
+<p class="subtitle lead">A Comprehensive Environment for Line-Following Robot Development</p>
 </div>
 
 
@@ -196,9 +203,9 @@ ul.task-list li input[type="checkbox"] {
 
 <p>A line following robot is an autonomous system designed to follow a path marked by a line on the ground. These robots are often considered an entry point into robotics and automation, as they incorporate fundamental concepts of sensor reading, motor control, and real-time decision making. However, while the basic concept might seem simple, developing a high-performance line follower requires sophisticated control systems and precise calibration.</p>
 <p>Named <strong>RobotZero</strong>, this project embodies the concept of starting from zero - both for those beginning their journey in robotics and in homage to DeepMind’s AlphaGo Zero. Like its namesake, which learned chess and Go from scratch, achieving mastery through self-play and analysis, RoboTZero is designed to be a foundation for learning through systematic data collection and analysis. Despite its diminutive size and seemingly simple purpose, the robot incorporates sophisticated logging and analysis capabilities that transform it from a basic line follower into a platform for understanding robotics fundamentals, control systems, and performance optimization. It represents “zero” not as nothing, but as the essential starting point for building knowledge and expertise in robotics.</p>
-<section id="the-platform-arduino-nano" class="level2" data-number="0.1">
-<h2 data-number="0.1" class="anchored" data-anchor-id="the-platform-arduino-nano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano</h2>
-<p>For this project, we chose the Arduino Nano as our main controller specifically for its constrained environment. When we can achieve efficiency and speed within such limitations, we learn how to optimize ideas, algorithms, and programs - skills that are valuable across all computing platforms. The Arduino Nano, based on the ATmega328P microcontroller, offers a small form factor (45 x 18 mm), ideal for compact robot designs. It includes 32KB of Flash memory, suitable for our advanced logging system, 2KB of SRAM for runtime operations, and runs at 16MHz, providing adequate processing power. The board features multiple analog inputs for our sensor array, PWM outputs for precise motor control, and maintains low power consumption while being cost-effective for both prototyping and final implementation.</p>
+<section id="the-platform-arduino-nano-arduinonano" class="level2" data-number="0.1">
+<h2 data-number="0.1" class="anchored" data-anchor-id="the-platform-arduino-nano-arduinonano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>)</h2>
+<p>For this project, we chose the Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>) as our main controller specifically for its constrained environment. When we can achieve efficiency and speed within such limitations, we learn how to optimize ideas, algorithms, and programs - skills that are valuable across all computing platforms. The Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>), based on the ATmega328P microcontroller, offers a small form factor (45 x 18 mm), ideal for compact robot designs. It includes 32KB of Flash memory, suitable for our advanced logging system, 2KB of SRAM for runtime operations, and runs at 16MHz, providing adequate processing power. The board features multiple analog inputs for our sensor array, PWM outputs for precise motor control, and maintains low power consumption while being cost-effective for both prototyping and final implementation.</p>
 </section>
 <section id="project-overview" class="level2" data-number="0.2">
 <h2 data-number="0.2" class="anchored" data-anchor-id="project-overview"><span class="header-section-number">0.2</span> Project Overview</h2>
@@ -207,8 +214,8 @@ ul.task-list li input[type="checkbox"] {
 <section id="why-c" class="level2" data-number="0.3">
 <h2 data-number="0.3" class="anchored" data-anchor-id="why-c"><span class="header-section-number">0.3</span> Why C++?</h2>
 <p>The choice of C++ as our programming language was deliberate and based on several key factors. C++ allows us to organize our code into logical classes and modules, making the system more maintainable and easier to understand. This is particularly important for complex systems like our logging mechanism. The language provides low-level hardware access while supporting high-level abstractions, crucial for real-time operations where microseconds matter, such as sensor reading and motor control.</p>
-<p>With limited resources on the Arduino Nano, C++’s efficient memory management and minimal runtime overhead are essential. We can precisely control memory allocation and ensure optimal use of the available RAM. The language’s support for namespaces, classes, and templates helps maintain clean code architecture despite the system’s complexity. C++’s strong type system helps catch errors at compile-time rather than runtime, which is crucial for a system that needs to operate autonomously. Additionally, C++ allows us to create clean abstractions over hardware components while maintaining direct access when needed, making the code both maintainable and efficient. The object-oriented features facilitate code reuse and modular design, making it easier to extend or modify the robot’s functionality.</p>
-<p>The combination of Arduino Nano’s capabilities with C++’s features allows us to create a sophisticated line following robot that not only performs its primary function but also provides valuable insights into its operation through advanced logging and analysis capabilities.</p>
+<p>With limited resources on the Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>), C++’s efficient memory management and minimal runtime overhead are essential. We can precisely control memory allocation and ensure optimal use of the available RAM. The language’s support for namespaces, classes, and templates helps maintain clean code architecture despite the system’s complexity. C++’s strong type system helps catch errors at compile-time rather than runtime, which is crucial for a system that needs to operate autonomously. Additionally, C++ allows us to create clean abstractions over hardware components while maintaining direct access when needed, making the code both maintainable and efficient. The object-oriented features facilitate code reuse and modular design, making it easier to extend or modify the robot’s functionality.</p>
+<p>The combination of Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>)’s capabilities with C++’s features allows us to create a sophisticated line following robot that not only performs its primary function but also provides valuable insights into its operation through advanced logging and analysis capabilities.</p>
 
 
 </section>
@@ -439,7 +446,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
+      var filterRegex = new RegExp("https:\/\/frankalcantara\.com");
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -784,7 +791,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>   
     <div class="nav-footer-center">
 <p>Copyright © 2024 Frank de Alcantara</p>
-</div>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>

@@ -139,7 +139,7 @@ These timing values were established during the November 2024 competition where 
 
 ## Global Variables Management (globals.h)
 
-The `globals.h` file represents a strategic decision in RobotZero's architecture, implementing a carefully selected set of global variables that require system-wide access. While global variables are generally discouraged in software development, their use here is justified by the real-time nature of the system and the Arduino Nano's limited resources.
+The `globals.h` file represents a strategic decision in RobotZero's architecture, implementing a carefully selected set of global variables that require system-wide access. While global variables are generally discouraged in software development, their use here is justified by the real-time nature of the system and the Arduino Nano's [@ArduinoNano] limited resources.
 
 ```cpp
 #ifndef GLOBALS_H
@@ -190,7 +190,7 @@ const char DEBUG_SETUP_START[] PROGMEM = "Starting setup";
 const char DEBUG_SETUP_COMPLETE[] PROGMEM = "Setup completed";
 ```
 
-These string constants are stored in program memory using the `PROGMEM` attribute. This approach saves precious RAM space on the Arduino Nano, which only has `2KB` available. To facilitate reading these stored strings, the system implements a helper function:
+These string constants are stored in program memory using the `PROGMEM` attribute. This approach saves precious RAM space on the Arduino Nano ([@ArduinoNano]), which only has `2KB` available. To facilitate reading these stored strings, the system implements a helper function:
 
 ```cpp
 // Helper function to print strings from Flash
@@ -221,7 +221,7 @@ The system provides a set of debugging macros that are completely eliminated whe
 #endif
 ```
 
-When DEBUG_LEVEL is `0`, these macros expand to nothing, ensuring zero overhead in the compiled code. When debugging is enabled, they provide different printing capabilities: `DEBUG_PRINT` and `DEBUG_PRINTLN` handle Flash-stored strings, while `DEBUG_PRINT_VAL` and `DEBUG_PRINTLN_VAL` handle direct value output. The do-while construct in `DEBUG_PRINTLN` ensures proper behaviour when the macro is used in if-else statements.
+When `DEBUG_LEVEL` is `0`, these macros expand to nothing, ensuring zero overhead in the compiled code. When debugging is enabled, they provide different printing capabilities: `DEBUG_PRINT` and `DEBUG_PRINTLN` handle Flash-stored strings, while `DEBUG_PRINT_VAL` and `DEBUG_PRINTLN_VAL` handle direct value output. The do-while construct in `DEBUG_PRINTLN` ensures proper behaviour when the macro is used in if-else statements.
 
 In practice, these macros are used throughout the codebase to provide diagnostic information. For example, during sensor readings:
 

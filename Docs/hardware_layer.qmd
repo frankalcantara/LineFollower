@@ -1,0 +1,434 @@
+# Hardware Interface Layer Description
+
+The Hardware Interface Layer represents the foundation of RobotZero's control system, providing direct interaction with the robot's physical components through three key classes: `MotorDrivers`, `Sensors`, and `Peripherals`. This layer abstracts the hardware complexity, offering interfaces for the Control Layer while managing critical timing and synchronization requirements.
+
+The `MotorDrivers` class implements a dual H-bridge motor control system, supporting bidirectional movement with PWM speed control. The class uses six GPIO pins to control two motors - three pins per motor (`FWD`, `REV`, `PWM`) - providing full control over movement direction and speed through a simple public interface. Power values are internally constrained between `-255` and `255`, where negative values indicate reverse direction and positive values indicate forward direction.
+
+The `Sensors` class manages a six-sensor array for line detection, implementing both calibration and position calculation algorithms. During calibration, it samples each sensor `400` times with `30ms` intervals, establishing minimum and maximum values that account for varying surface conditions and ambient lighting. The line position calculation uses weighted sensor values to determine the robot's position relative to the line, with outer sensors having greater influence to enhance curve detection and stability.
+
+The `Peripherals` class handles auxiliary hardware components, particularly the start button with sophisticated debounce logic and status LED control. In debug mode, it also manages communication protocols for data retrieval. The button management implements a state machine with five states (`WAITING_PRESS`, `DEBOUNCING_PRESS`, `WAITING_RELEASE`, `DEBOUNCING_RELEASE`, `BUTTON_HANDLED`) to ensure reliable button operation even under competition conditions.
+
+## MotorDrivers Implementation (MotorsDrivers.h / MotorsDrivers.cpp)
+
+The `MotorDriver` class provides precise control over RobotZero's dual DC motor system through PWM modulation. The implementation focuses on clean, efficient motor control while ensuring safe operation through power constraints and proper pin initialization. Here's the detailed implementation:
+
+```cpp
+#ifndef MOTORDRIVER_H
+#define MOTORDRIVER_H
+
+class MotorDriver {
+public:
+   static void initializeMotorDriver();
+   static void setLeftMotorPower(int value);
+   static void setRightMotorPower(int value);
+   static void setMotorsPower(int left, int right);
+};
+
+#endif // MOTORDRIVER_H
+```
+
+The header defines a static class interface, eliminating the need for instance management while providing global access to motor control functions. The implementation file contains the core functionality:
+
+```cpp
+#include <Arduino.h>
+#include "MotorsDrivers.h"
+#include "config.h"
+
+void MotorDriver::initializeMotorDriver() {
+   pinMode(PIN_MOTOR_LEFT_FWD, OUTPUT);
+   pinMode(PIN_MOTOR_LEFT_REV, OUTPUT);
+   pinMode(PIN_MOTOR_LEFT_PWM, OUTPUT);
+   pinMode(PIN_MOTOR_RIGHT_FWD, OUTPUT);
+   pinMode(PIN_MOTOR_RIGHT_REV, OUTPUT);
+   pinMode(PIN_MOTOR_RIGHT_PWM, OUTPUT);
+}
+
+void MotorDriver::setLeftMotorPower(int value) {
+   // Protect PWM value range
+   value = constrain(value, -255, 255);
+
+   if (value >= 0) {
+       digitalWrite(PIN_MOTOR_LEFT_FWD, HIGH);
+       digitalWrite(PIN_MOTOR_LEFT_REV, LOW);
+   }
+   else {
+       digitalWrite(PIN_MOTOR_LEFT_FWD, LOW);
+       digitalWrite(PIN_MOTOR_LEFT_REV, HIGH);
+       value *= -1;
+   }
+
+   analogWrite(PIN_MOTOR_LEFT_PWM, value);
+}
+
+void MotorDriver::setRightMotorPower(int value) {
+   // Protect PWM value range
+   value = constrain(value, -255, 255);
+
+   if (value >= 0) {
+       digitalWrite(PIN_MOTOR_RIGHT_FWD, HIGH);
+       digitalWrite(PIN_MOTOR_RIGHT_REV, LOW);
+   }
+   else {
+       digitalWrite(PIN_MOTOR_RIGHT_FWD, LOW);
+       digitalWrite(PIN_MOTOR_RIGHT_REV, HIGH);
+       value *= -1;
+   }
+
+   analogWrite(PIN_MOTOR_RIGHT_PWM, value);
+}
+
+void MotorDriver::setMotorsPower(int left, int right) {
+   setLeftMotorPower(left);
+   setRightMotorPower(right);
+}
+```
+
+Each motor requires three control signals: Forward (`FWD`), Reverse (`REV`), and `PWM` for speed control. The `initializeMotorDriver()` method configures these pins as outputs during system initialization. The implementation uses Arduino's standard GPIO functions (`pinMode`, `digitalWrite`, `analogWrite`) for direct hardware control.
+
+The power setting methods (`setLeftMotorPower` and `setRightMotorPower`) accept values between `-255` and `255`, where the sign determines direction and the magnitude controls speed. The `constrain` function ensures values remain within safe operating ranges. For each motor:
+
+- Positive values: `FWD` pin `HIGH`, `REV` pin `LOW`;
+- Negative values: `FWD` pin `LOW`, `REV` pin `HIGH`;
+- Absolute value determines `PWM` duty cycle (`0-255`).
+
+The unified `setMotorsPower` method enables simultaneous control of both motors, crucial for smooth operation during turns and speed adjustments. This design supports the differential drive system used by RobotZero, where the difference between left and right motor powers determines turning behaviour.
+
+All pin assignments are defined in the configuration layer through the following constants:
+
+```cpp
+static const uint8_t PIN_MOTOR_LEFT_FWD = 7;     // Left Motor Direction
+static const uint8_t PIN_MOTOR_LEFT_REV = 4;     // Left Motor Direction
+static const uint8_t PIN_MOTOR_LEFT_PWM = 3;     // Left Motor Speed
+static const uint8_t PIN_MOTOR_RIGHT_FWD = 8;    // Right Motor Direction
+static const uint8_t PIN_MOTOR_RIGHT_REV = 9;    // Right Motor Direction
+static const uint8_t PIN_MOTOR_RIGHT_PWM = 10;   // Right Motor Speed
+```
+
+>The static class design eliminates memory allocation concerns, while the straightforward pin control methods ensure reliable real-time response to control inputs.
+
+## Sensors Implementation (Sensors.h / Sensors.cpp)
+
+The `Sensors` class manages RobotZero's line detection system, implementing calibration and position calculation algorithms for a six-sensor array. The class maintains calibration values for each sensor and provides reliable line position data even under varying lighting conditions and surface reflectivity.
+
+```cpp
+#ifndef SENSORS_H
+#define SENSORS_H
+
+#include "config.h"
+#include "Timer.h"
+
+class Sensors {
+private:
+   static int16_t sensorMin[NUM_SENSORES];
+   static int16_t sensorMax[NUM_SENSORES];
+   static volatile int16_t processedSensorValues[NUM_SENSORES];
+   static boolean isLineDetected;
+   static int16_t lastValidLinePosition;
+   static int16_t lastValidPosition;
+
+   static void readSensors();
+
+public:
+   static void calibration();
+   static int16_t calculateLinePosition();
+};
+
+#endif // SENSORS_H
+```
+
+The implementation provides core sensor management functionality:
+
+```cpp
+#include <Arduino.h>
+#include "Sensors.h"
+#include "config.h"
+#include "debug.h"
+
+void Sensors::calibration() {
+   static Timer calibrationTimer;
+   static uint16_t calibrationCount = 0;
+
+   calibrationCount = 0;
+   calibrationTimer.Start(CALIBRATION_DELAY);
+
+   while (calibrationCount < CALIBRATION_SAMPLES) {
+       if (calibrationTimer.Expired()) {
+           int16_t v_s[NUM_SENSORES];
+
+           // Read all sensors
+           v_s[0] = analogRead(PIN_LINE_LEFT_EDGE);
+           v_s[1] = analogRead(PIN_LINE_LEFT_MID);
+           v_s[2] = analogRead(PIN_LINE_CENTER_LEFT);
+           v_s[3] = analogRead(PIN_LINE_CENTER_RIGHT);
+           v_s[4] = analogRead(PIN_LINE_RIGHT_MID);
+           v_s[5] = analogRead(PIN_LINE_RIGHT_EDGE);
+
+           // Update min and max values
+           for (uint8_t i = 0; i < NUM_SENSORES; i++) {
+               if (v_s[i] < sensorMin[i]) sensorMin[i] = v_s[i];
+               if (v_s[i] > sensorMax[i]) sensorMax[i] = v_s[i];
+           }
+
+           calibrationCount++;
+           calibrationTimer.Start(CALIBRATION_DELAY);
+       }
+   }
+}
+```
+
+The calibration process takes `400` samples over approximately `12` seconds, establishing minimum and maximum values for each sensor. This adaptive approach allows the robot to function effectively under various lighting conditions. The timing is controlled by the `Timer` class, ensuring **consistent sampling intervals without blocking the system**.
+
+The position calculation algorithm implements a weighted average approach:
+
+```cpp
+int16_t Sensors::calculateLinePosition() {
+   readSensors();
+
+   int16_t s_p_local[NUM_SENSORES];
+   bool isOnline;
+
+   // Copy values atomically
+   noInterrupts();
+   for (uint8_t i = 0; i < NUM_SENSORES; i++) {
+       s_p_local[i] = processedSensorValues[i];
+   }
+   isOnline = isLineDetected;
+   interrupts();
+
+   // Calculate weighted average
+   float avg = SENSOR_WEIGHT_S1 * s_p_local[0] + SENSOR_WEIGHT_S2 * s_p_local[1] +
+       SENSOR_WEIGHT_S3 * s_p_local[2] + SENSOR_WEIGHT_S4 * s_p_local[3] +
+       SENSOR_WEIGHT_S5 * s_p_local[4] + SENSOR_WEIGHT_S6 * s_p_local[5];
+
+   int sum = s_p_local[0] + s_p_local[1] + s_p_local[2] +
+       s_p_local[3] + s_p_local[4] + s_p_local[5];
+
+   if (isOnline && sum > SENSOR_THRESHOLD) {
+       if (sum != 0) {
+           float position = constrain(100.0f * avg / sum, -100.0f, 100.0f);
+           lastValidLinePosition = int16_t(position);
+       }
+       else {
+           lastValidLinePosition = lastValidPosition;
+       }
+   }
+   else {
+       lastValidLinePosition = (lastValidPosition < 0) ? -100 : 100;
+   }
+
+   lastValidPosition = lastValidLinePosition;
+   return lastValidLinePosition;
+}
+```
+
+The position calculation represents a weighted average system that transforms six analog sensor readings into a single position value between `-100` and `+100`. Here's how it works:
+
+Each sensor contributes to the position calculation with a specific weight:
+- Outer sensors (`S1`, `S6`): `±2.5 weight`;
+- Middle sensors (`S2`, `S5`): `±1.2 weight`;
+- Inner sensors (`S3`, `S4`): `±0.6 weight`.
+
+This weighting scheme creates a non-linear response curve that provides several advantages:
+
+1. Progressive Response: As the line moves from the center towards the edges, the position value changes non-linearly:
+  - Small deviations near center: Inner sensors (`±0.6`) provide fine control
+  - Medium deviations: Middle sensors (`±1.2`) increase response
+  - Large deviations: Outer sensors (`±2.5`) trigger strongest response
+
+2. Early Curve Detection: The higher weights on outer sensors mean curves are detected earlier, as these sensors will contribute more strongly to the average when they begin detecting the line. For example, when entering a left curve:
+  - First, `S1` (`-2.5`) begins detecting the line
+  - Its high negative weight immediately pulls the average left
+  - This early detection allows the robot to begin turning before the line reaches the inner sensors
+
+3. Straight Line Stability: The lower weights on inner sensors (`±0.6`) mean small variations when tracking a straight line produce smaller position changes:
+  - Line centred: All sensors contribute proportionally
+  - Small wobble: Inner sensors' lower weights reduce overreaction
+  - Result: Smoother straight-line tracking
+
+The calculation formula:
+
+```cpp
+float avg = (-2.5 * s1) + (-1.2 * s2) + (-0.6 * s3) + 
+           (0.6 * s4) + (1.2 * s5) + (2.5 * s6);
+int sum = s1 + s2 + s3 + s4 + s5 + s6;
+float position = 100.0f * avg / sum;
+```
+
+This creates a position value where:
+- `0`: Line is perfectly centred
+- `-100`: Line is far to the left
+- `+100`: Line is far to the right
+
+The denominator (`sum`) normalizes the result, making it independent of absolute reflection values, while the multiplier (`100.0f`) scales the result to the desired range. This weighted system provides both the fine control needed for straight lines and the quick response required for curves, contributing significantly to the robot's overall performance and stability.
+
+The sensor pins and weights are defined in the configuration layer:
+
+```cpp
+static const uint8_t PIN_LINE_LEFT_EDGE = A6;      // Leftmost sensor
+static const uint8_t PIN_LINE_LEFT_MID = A5;
+static const uint8_t PIN_LINE_CENTER_LEFT = A4;
+static const uint8_t PIN_LINE_CENTER_RIGHT = A3;
+static const uint8_t PIN_LINE_RIGHT_MID = A2;
+static const uint8_t PIN_LINE_RIGHT_EDGE = A1;     // Rightmost sensor
+
+static constexpr float SENSOR_WEIGHT_S1 = -2.5f;  // Far left
+static constexpr float SENSOR_WEIGHT_S2 = -1.2f;  // Left
+static constexpr float SENSOR_WEIGHT_S3 = -0.6f;  // Center-left
+static constexpr float SENSOR_WEIGHT_S4 = 0.6f;   // Center-right
+static constexpr float SENSOR_WEIGHT_S5 = 1.2f;   // Right
+static constexpr float SENSOR_WEIGHT_S6 = 2.5f;   // Far right
+```
+
+The class implements atomic operations when updating sensor values to prevent data corruption during reads, ensuring reliable position data for the control system.
+
+>TODO: We need to change the calibration process. RobotZero should be placed on the track, about 40cm from the starting line, then turn left until the outermost sensor passes through black, white, and black, then turn right until the outermost sensor passes through black, white, and black. This should be repeated twice. The rest of the calibration process remains the same. After calibration, RobotZero stops aligned and ready to start.
+
+## Peripherals Implementation (Peripherals.h / Peripherals.cpp)
+
+The `Peripherals` class manages auxiliary hardware interactions, focusing primarily on button input handling and LED status indication. It implements a sophisticated state machine for button debouncing and, when in debug mode, manages data transmission protocols.
+
+```cpp
+#ifndef PERIPHERALS_H
+#define PERIPHERALS_H
+
+#include "Timer.h"
+
+class Peripherals {
+private:
+   // Button state machine states
+   enum ButtonState {
+       WAITING_PRESS,
+       DEBOUNCING_PRESS,
+       WAITING_RELEASE,
+       DEBOUNCING_RELEASE,
+       BUTTON_HANDLED
+   };
+
+   static ButtonState buttonState;
+   static Timer debounceTimer;
+   static bool lastButtonState;
+
+public:
+   static void initialize();
+   static void waitForButtonPress();
+};
+
+#endif // PERIPHERALS_H
+```
+
+The implementation provides robust button handling and system initialization:
+
+```cpp
+#include <Arduino.h>
+#include "Peripherals.h"
+#include "config.h"
+#include "debug.h"
+#include "LedPattern.h"
+
+#if DEBUG_LEVEL > 0
+#include "FlashManager.h"
+#include "FlashReader.h"
+#endif
+
+void Peripherals::initialize() {
+   pinMode(PIN_START_BUTTON, INPUT);
+   buttonState = WAITING_PRESS;
+#if DEBUG_LEVEL > 0
+   LedPattern::initialize();
+#endif
+}
+
+void Peripherals::waitForButtonPress() {
+   buttonState = WAITING_PRESS;
+
+#if DEBUG_LEVEL > 0
+   if (FlashManager::isLogReady()) {
+       bool currentState = digitalRead(PIN_START_BUTTON);
+
+       if (currentState != lastButtonState) {
+           debounceTimer.Start(DEBOUNCE_DELAY);
+           if (currentState == HIGH) {
+               buttonState = DEBOUNCING_PRESS;
+           }
+       }
+
+       if (debounceTimer.Expired() && buttonState == DEBOUNCING_PRESS) {
+           LedPattern::startTransmissionPattern();
+           FlashReader::processCommands();
+           LedPattern::stopPattern();
+           return;
+       }
+       lastButtonState = currentState;
+       return;
+   }
+#endif
+
+   while (buttonState != BUTTON_HANDLED) {
+       bool currentState = digitalRead(PIN_START_BUTTON);
+
+       if (currentState != lastButtonState) {
+           debounceTimer.Start(DEBOUNCE_DELAY);
+
+           if (currentState == HIGH) {
+               buttonState = DEBOUNCING_PRESS;
+           }
+           else {
+               buttonState = DEBOUNCING_RELEASE;
+           }
+       }
+
+       if (debounceTimer.Expired()) {
+           switch (buttonState) {
+               case DEBOUNCING_PRESS:
+                   if (currentState == HIGH) {
+                       buttonState = WAITING_RELEASE;
+                   }
+                   else {
+                       buttonState = WAITING_PRESS;
+                   }
+                   break;
+
+               case DEBOUNCING_RELEASE:
+                   if (currentState == LOW) {
+                       buttonState = BUTTON_HANDLED;
+                   }
+                   else {
+                       buttonState = WAITING_RELEASE;
+                   }
+                   break;
+
+               default:
+                   break;
+           }
+       }
+
+       lastButtonState = currentState;
+   }
+}
+```
+
+The class implements a comprehensive button debouncing state machine with five states:
+
+- `WAITING_PRESS`: Initial state, waiting for button press;
+- `DEBOUNCING_PRESS`: Validating button press;
+- `WAITING_RELEASE`: Press confirmed, waiting for release;
+- `DEBOUNCING_RELEASE`: Validating button release;
+- `BUTTON_HANDLED`: Complete press cycle detected.
+
+The state machine handles mechanical bounce by requiring state transitions to remain stable for `DEBOUNCE_DELAY` (`50ms`) before being accepted. This ensures reliable button operation even in high-vibration environments.
+
+In debug mode (`DEBUG_LEVEL > 0`), the class also manages the interface between user input and the logging system:
+
+1. Checks for available log data using `FlashManager`
+2. Initiates data transmission when button is pressed
+3. Controls LED patterns to indicate transmission status
+
+The configuration includes pin definitions and timing parameters:
+
+```cpp
+static const uint8_t PIN_START_BUTTON = 11;     // Start/calibrate button
+static const uint8_t PIN_STATUS_LED = 13;       // Status indicator LED
+static const uint16_t DEBOUNCE_DELAY = 50;      // Button debounce time in milliseconds
+```
+
+This implementation provides reliable user interaction for both normal operation and debug functions, with the state machine approach ensuring consistent button behaviour regardless of mechanical switch quality or environmental conditions.
