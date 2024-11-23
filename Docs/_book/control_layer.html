@@ -540,7 +540,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <blockquote class="blockquote">
 <p><strong>Implementation Note:</strong><br>
-TODO: These variables should be transferred to macros or constexpr’s in the configuration layer, maintaining the system’s design principles of compile-time optimization and centralized configuration.</p>
+**TODO**: These variables should be transferred to macros or constexpr’s in the configuration layer, maintaining the system’s design principles of compile-time optimization and centralized configuration.</p>
 </blockquote>
 <p>The translation between default values and profile-specific values is handled through the <code>getSpeedValue</code> method:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">uint8_t</span> ProfileManager<span class="op">::</span>getSpeedValue<span class="op">(</span><span class="dt">uint8_t</span> defaultSpeed<span class="op">)</span> <span class="op">{</span></span>
@@ -896,7 +896,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
+      // **TODO** in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

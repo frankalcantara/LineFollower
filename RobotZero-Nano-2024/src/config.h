@@ -57,6 +57,9 @@ static const uint8_t PIN_LINE_RIGHT_EDGE = A1;     // Rightmost sensor
 static const uint8_t PIN_MARKER_LEFT = A7;         // Left marker
 static const uint8_t PIN_MARKER_RIGHT = A0;        // Right marker
 
+// Marker reading interval (in milliseconds)
+static constexpr uint16_t MARKER_READ_INTERVAL = 2;  // Read interval in ms
+
 // ====== Predefined Speeds ======
 // These are base speeds, will be modified by ProfileManager in debug modes
 static constexpr uint8_t SPEED_STOP = 0;       // Stopped

@@ -122,7 +122,8 @@ The control system parameters represent the core of the robot's line-following b
 The sensor array consists of six sensors (`NUM_SENSORES`), each providing analog readings from `0` to `1023` (`SENSOR_MIN_VALUE` to `SENSOR_MAX_VALUE`). A threshold value of `120` helps distinguish between line and background surface conditions. The sensor weights are particularly crucial, implementing a distributed sensing system where outer sensors (`±2.5`) have greater influence than inner ones (`±0.6`), creating a non-linear response that enhances stability in straight lines while maintaining sensitivity to curves. These weights are asymmetrical around the center point, allowing the robot to detect and respond to position changes with increasing urgency as it deviates further from the line. When processed together in the main control loop, these parameters enable the robot to maintain precise line following while adapting to various track conditions and geometries.
 
 ### Timing Parameters
-Controls various timing aspects of the robot's operation.
+
+The timing parameters control various time-dependent aspects of the robot's operation, each carefully tuned for optimal performance:
 
 ```cpp
 // Delays and Timings
@@ -131,11 +132,18 @@ static const uint16_t CALIBRATION_SAMPLES = 400;   // Calibration precision
 static const uint8_t CALIBRATION_DELAY = 30;       // Sample interval
 static const uint16_t STOP_DELAY = 300;            // Final stop timing
 static const uint16_t DEBOUNCE_DELAY = 50;         // Button debounce
+static constexpr uint16_t MARKER_READ_INTERVAL = 2; // Marker reading interval
 ```
 
-The timing parameters, all specified in milliseconds, govern critical operational sequences of the robot. The `SETUP_DELAY` of `600ms` allows the system to stabilize after power-up, ensuring all sensors and components are ready for operation. During calibration, the system takes `400` samples (`CALIBRATION_SAMPLES`) from each sensor, with a `30ms` interval (`CALIBRATION_DELAY`) between samples, providing a comprehensive baseline for sensor readings while balancing between accuracy and calibration time - resulting in a total calibration period of approximately `12 seconds`. When the robot detects its final lap marker, it initiates a controlled stop sequence lasting `300ms` (`STOP_DELAY`), allowing for smooth deceleration. Button inputs are processed with a `50ms` debounce period (`DEBOUNCE_DELAY`), effectively filtering out mechanical noise and contact bounce while maintaining responsive user interaction. 
+Each timing parameter serves a specific purpose in the system:
 
-These timing values were established during the November 2024 competition where RoboZero secured second place, proving their effectiveness under competitive conditions.
+- `SETUP_DELAY` (600ms): Allows system stabilization after power-up
+- `CALIBRATION_SAMPLES` (400) and `CALIBRATION_DELAY` (30ms): Controls sensor calibration timing
+- `STOP_DELAY` (300ms): Controls gradual deceleration sequence
+- `DEBOUNCE_DELAY` (50ms): Ensures reliable button operation
+- `MARKER_READ_INTERVAL` (2ms): Controls the frequency of marker sensor readings
+
+The `MARKER_READ_INTERVAL` parameter is particularly crucial for the CourseMarkers system. It ensures consistent and efficient marker detection by establishing a fixed interval between marker sensor readings. This `2ms` interval was chosen to balance between: Detection reliability (frequent enough to not miss markers); Processing efficiency (not reading unnecessarily often) and System responsiveness (minimal delay in marker detection). 
 
 ## Global Variables Management (globals.h)
 

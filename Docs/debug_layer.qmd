@@ -530,7 +530,7 @@ When modifying these values, always ensure:
 
 The `FlashReader` class manages data transmission from RobotZero's flash memory to the external analysis system. It implements a protocol that ensures data integrity and provides clear section delineation for the receiving system.
 
->TODO: The Logger's data writing, reading, and transmission processes have not been sufficiently tested.
+>**TODO**: The Logger's data writing, reading, and transmission processes have not been sufficiently tested.
 
 #### Protocol Structure:
 

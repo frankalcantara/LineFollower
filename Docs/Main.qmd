@@ -2,10 +2,11 @@
 
 The `main.cpp` file serves as the orchestration center for RobotZero, integrating all layers and managing the robot's core operation sequence. The implementation follows a clear state machine pattern during setup and implements a sophisticated control loop for line following.
 
-Setup Phase:
+## Setup Phase
+
 The initialization process follows a non-blocking state machine with seven states:
 
-```cpp
+``` cpp
 enum SetupState {
    SETUP_INIT,        // Initial system configuration
    SETUP_WAIT1,       // First stabilization delay
@@ -19,9 +20,80 @@ enum SetupState {
 
 Each state ensures proper system initialization without blocking operations. This is particularly important for sensor stabilization and user interaction.
 
+## Main Loop
+
+The main control loop has been optimized to work efficiently with the time-controlled CourseMarkers system:
+
+``` cpp
+void loop() {
+#if DEBUG_LEVEL > 0
+    LedPattern::process();
+#endif
+
+    // Process marker signals with optimized timing
+    CourseMarkers::processMarkerSignals();
+
+    // Skip control if robot is stopped
+    if (isRobotStopped) {
+        MotorDriver::setMotorsPower(0, 0);
+#if DEBUG_LEVEL > 0
+        if (Logger::isLogging()) {
+            Logger::endSession();
+        }
+#endif
+        return;
+    }
+
+    // Position and error calculation
+    int linePosition = Sensors::calculateLinePosition();
+    int error = linePosition - targetLinePosition;
+
+    // Update current speed using optimized control
+#if DEBUG_LEVEL > 0
+    currentSpeed = ProfileManager::getSpeedValue(CourseMarkers::speedControl(error));
+#else
+    currentSpeed = CourseMarkers::speedControl(error);
+#endif
+
+    // Error derivative calculation and filtering
+    int d_error = error - previousError;
+    filteredErrorRate = filterCoefficient * d_error + 
+                      (1 - filterCoefficient) * filteredErrorRate;
+
+    // PID correction calculation
+    float proportional_term = kProportional * error;
+    float derivative_term = kDerivative * filteredErrorRate;
+    float total_correction = proportional_term + derivative_term;
+
+    // Speed adjustment for high velocities
+    float speed_factor = (currentSpeed > 200) ? 0.85f : 1.0f;
+    int correction_power = constrain(int(total_correction * speed_factor), -255, 255);
+
+    // Motor power application
+    int left_power = constrain(currentSpeed + correction_power, -255, 255);
+    int right_power = constrain(currentSpeed - correction_power, -255, 255);
+
+    MotorDriver::setMotorsPower(left_power, right_power);
+}
+```
+
+The main control loop has been designed to work in synchronization with the time-controlled CourseMarkers system. At its core, the integration revolves around the **principle of minimal interference between different control aspects while maintaining precise timing and efficient resource usage**.
+
+The marker processing system operates on a fixed `2ms` interval, managed entirely within the CourseMarkers class. When the main loop calls `processMarkerSignals()`, the function internally checks if enough time has elapsed since the last marker reading. This time-controlled approach eliminates the need for delay functions or complex timing management in the main loop, allowing the system to maintain consistent response times while preventing unnecessary sensor readings. The LED status updates, previously handled in multiple locations, are now centralized within the CourseMarkers class and only occur when markers are actually detected, reducing unnecessary GPIO operations.
+
+Speed control has been tightly integrated with the marker detection system through an optimized decision tree. When the CourseMarkers system detects a curve condition, it immediately adjusts the speed without waiting for the next control cycle. This early-return mechanism significantly reduces processing time by skipping unnecessary calculations when the robot's state is already determined. The system maintains a minimal set of state variables (`isTurning`, `isExitingTurn`, `boostCountdown`) that efficiently track the robot's movement status without requiring complex data structures or extensive memory usage.
+
+![Speed Control Decision Tree](images/DecisonTree.drawio.png){fig-align="center"}
+
+The PID control system operates independently but in coordination with the speed control system. Position errors are processed continuously, but the applied corrections are scaled based on the current speed profile. This separation of concerns allows each system to operate optimally within its domain while still working together coherently. The implementation uses direct calculations instead of lookup tables, and the derivative term is filtered using a simple but effective exponential filter that requires only a single additional variable (\`filteredErrorRatev).
+
+For example, when approaching a curve, the system's response follows a precisely coordinated sequence: the marker detection system identifies the curve marker within its 2ms timing window, immediately triggers a speed adjustment through the early-return mechanism, and the PID controller smoothly adapts its corrections based on the new speed profile. All of this occurs without explicit synchronization code or complex timing management in the main loop.
+
+This integrated approach has shown significant improvements in processing efficiency. By allowing each subsystem to manage its own timing and state while maintaining clean interfaces between components, the implementation achieves both precise control and efficient resource usage. Testing in high-speed conditions has demonstrated that the system can maintain reliable marker detection and smooth motion control while operating at maximum speed, validating the effectiveness of this harmonized design approach.
+
 **Control Parameters**: The main loop maintains critical control variables:
 
-```cpp
+``` cpp
 // Control parameters
 int targetLinePosition = POSICION_IDEAL_DEFAULT;
 float kProportional = K_PROPORTIONAL_DEFAULT;
@@ -33,7 +105,7 @@ int previousError = 0;
 
 The main control loop implements a sophisticated PID control system with filtered derivative action:
 
-```cpp
+``` cpp
 void loop() {
 #if DEBUG_LEVEL > 0
    LedPattern::process();
@@ -122,9 +194,9 @@ $$
 
 Where:
 
-- $e$ is the lateral error relative to the desired trajectory;
-- $v$ is the robot's linear velocity;
-- $\alpha$ is the angle between the robot's direction and desired trajectory.
+-   $e$ is the lateral error relative to the desired trajectory;
+-   $v$ is the robot's linear velocity;
+-   $\alpha$ is the angle between the robot's direction and desired trajectory.
 
 Taking the time derivative:
 
@@ -176,15 +248,15 @@ $$
 
 Implementation Constraints:
 
-While this control approach provides superior theoretical performance, practical implementation on RobotZero's Arduino Nano ([@ArduinoNano]) platform would require: 
+While this control approach provides superior theoretical performance, practical implementation on RobotZero's Arduino Nano ([@ArduinoNano]) platform would require:
 
-1. Flash Memory: Additional `~30%` (`~8KB`) for enhanced control algorithms and sensor processing;
-2. RAM: ~15% increase (`~300 bytes`) for additional state variables and calculations;
-3. Processing Time: Doubled control loop duration due to complex mathematical operations.
+1.  Flash Memory: Additional `~30%` (`~8KB`) for enhanced control algorithms and sensor processing;
+2.  RAM: \~15% increase (`~300 bytes`) for additional state variables and calculations;
+3.  Processing Time: Doubled control loop duration due to complex mathematical operations.
 
 These requirements exceed available resources on the Arduino Nano ([@ArduinoNano]) platform. Therefore, RobotZero implements a simplified PID variant that maintains acceptable performance while operating within hardware constraints:
 
-```cpp
+``` cpp
 float proportional_term = kProportional * error;
 float derivative_term = kDerivative * filteredErrorRate;
 float total_correction = proportional_term + derivative_term;
@@ -196,18 +268,18 @@ To implement integral control in RobotZero's current architecture, we would need
 
 Code Modifications Required:
 
-1. Add integral term to control variables:
-   
-```cpp
+1.  Add integral term to control variables:
+
+``` cpp
 // Control parameters - add to main.cpp
 float kIntegral = K_INTEGRAL_DEFAULT;    // Integral gain
 float integralError = 0;                 // Accumulated error
 float integralLimit = 200.0f;            // Anti-windup limit
 ```
 
-1. Modify the main control loop:
-   
-    ```cpp
+1.  Modify the main control loop:
+
+    ``` cpp
     // In main loop, after error calculation
     integralError += error * loopInterval;  // Loop interval in seconds
 
@@ -223,48 +295,50 @@ float integralLimit = 200.0f;            // Anti-windup limit
 
     In PID control systems, integral windup (or reset windup) is a serious problem that occurs when the integral term accumulates larger error than the system can physically correct. This situation typically happens when the actuator reaches its physical limits (saturation), but the integral term continues to accumulate error. For example, in RobotZero's case:
 
-       - The motors have a maximum `PWM` value of `255`;
-       - If the robot is far from the line, the error is large;
-       - The integral term keeps accumulating this error;
-       - Even if the robot returns to the line, the accumulated integral term remains large;
-       - This causes significant overshoot and oscillation;
+    ```         
+    - The motors have a maximum `PWM` value of `255`;
+    - If the robot is far from the line, the error is large;
+    - The integral term keeps accumulating this error;
+    - Even if the robot returns to the line, the accumulated integral term remains large;
+    - This causes significant overshoot and oscillation;
+    ```
 
     Consider this scenario:
 
-    1. Robot loses the line (large error);
-    2. Without anti-windup: integral term keeps growing indefinitely;
-    3. When line is found again, the huge integral term causes the robot to overshoot;
-    4. This leads to oscillations or even complete loss of control.
+    1.  Robot loses the line (large error);
+    2.  Without anti-windup: integral term keeps growing indefinitely;
+    3.  When line is found again, the huge integral term causes the robot to overshoot;
+    4.  This leads to oscillations or even complete loss of control.
 
     The anti-windup protection:
 
-2. Add configuration constant:
-   
-    ```cpp
+2.  Add configuration constant:
+
+    ``` cpp
     // In config.h
     static constexpr float K_INTEGRAL_DEFAULT = 0.1f;
     ```
 
-3. Update ProfileManager for debug modes:
+3.  Update ProfileManager for debug modes:
 
-    ```cpp
+    ``` cpp
     struct SpeedProfile {
     // Existing members...
     float kIntegral;            // Add integral gain
     };
     ```
 
-4. Resource Impact:
-   
-   - Flash Memory: `~100 bytes` (negligible increase)
-   - RAM: `8 bytes` (`2 floats`: integralError and integralLimit)
-   - Processing Time: `<5% `increase per control loop
+4.  Resource Impact:
+
+    -   Flash Memory: `~100 bytes` (negligible increase)
+    -   RAM: `8 bytes` (`2 floats`: integralError and integralLimit)
+    -   Processing Time: `<5%`increase per control loop
 
 Debug System Impact:
 
-1. Expand PerformanceRecord:
+1.  Expand PerformanceRecord:
 
-    ```cpp
+    ``` cpp
     struct PerformanceRecord {
     // Existing members...
     float integralTerm;    // Add if detailed analysis needed

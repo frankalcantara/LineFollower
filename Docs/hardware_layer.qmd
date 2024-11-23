@@ -281,7 +281,7 @@ static constexpr float SENSOR_WEIGHT_S6 = 2.5f;   // Far right
 
 The class implements atomic operations when updating sensor values to prevent data corruption during reads, ensuring reliable position data for the control system.
 
->TODO: We need to change the calibration process. RobotZero should be placed on the track, about 40cm from the starting line, then turn left until the outermost sensor passes through black, white, and black, then turn right until the outermost sensor passes through black, white, and black. This should be repeated twice. The rest of the calibration process remains the same. After calibration, RobotZero stops aligned and ready to start.
+>**TODO**: We need to change the calibration process. RobotZero should be placed on the track, about 40cm from the starting line, then turn left until the outermost sensor passes through black, white, and black, then turn right until the outermost sensor passes through black, white, and black. This should be repeated twice. The rest of the calibration process remains the same. After calibration, RobotZero stops aligned and ready to start.
 
 ## Peripherals Implementation (Peripherals.h / Peripherals.cpp)
 

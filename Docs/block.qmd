@@ -36,9 +36,9 @@ Handles external interfaces including button input and LED status indication. No
 
 ## Control Layer
 
-### CourseMarkers
+# CourseMarkers
 
-Processes track markers using a state machine approach to detect different patterns (finish line, speed mode changes, intersections). Its sophisticated detection system can differentiate between various marker combinations while maintaining reliable operation under varying light conditions.
+The CourseMarkers class manages track feature detection and the robot's behaviour responses. A key innovation is its time-controlled marker detection system, using a fixed interval (`MARKER_READ_INTERVAL`) to optimize sensor readings. The class implements an efficient state machine that processes four distinct states (`0-3`) representing different marker combinations. Its detection system includes timing controls to ensure reliable operation while minimizing processing overhead.
 
 ### ProfileManager
 

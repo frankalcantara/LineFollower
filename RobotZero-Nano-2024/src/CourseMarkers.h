@@ -6,6 +6,10 @@
 
 class CourseMarkers {
 private:
+    // Timing control
+    static uint32_t lastReadTime;
+    static const uint16_t MARKER_READ_INTERVAL = 2;  // Read interval in ms
+
     // State variables
     static int speed;
     static int lastMarkerState;

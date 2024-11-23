@@ -145,7 +145,7 @@ void loop() {
     LedPattern::process();
 #endif
 
-// Detect geometry to update situation
+    // Process marker signals with optimized timing
     CourseMarkers::processMarkerSignals();
 
     // Skip control if robot is stopped
@@ -163,14 +163,14 @@ void loop() {
     int linePosition = Sensors::calculateLinePosition();
     int error = linePosition - targetLinePosition;
 
-    // Update current speed using new control
+    // Update current speed using new control interface
 #if DEBUG_LEVEL > 0
     currentSpeed = ProfileManager::getSpeedValue(CourseMarkers::speedControl(error));
 #else
     currentSpeed = CourseMarkers::speedControl(error);
 #endif
 
-// Calculate error derivative and filter
+    // Calculate error derivative and filter
     int d_error = error - previousError;
     filteredErrorRate = filterCoefficient * d_error + (1 - filterCoefficient) * filteredErrorRate;
 
@@ -191,7 +191,7 @@ void loop() {
     previousError = error;
 
 #if DEBUG_LEVEL > 0
-// Log performance data
+    // Log performance data
     if (Logger::isLogging()) {
         uint8_t state = 0;
         if (isPrecisionMode) state |= 0x01;
@@ -212,4 +212,4 @@ void loop() {
     DEBUG_PRINT(DEBUG_CORRECTION);
     DEBUG_PRINTLN_VAL(correction_power);
 #endif
-}
+}   

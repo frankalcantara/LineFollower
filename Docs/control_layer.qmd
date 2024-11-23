@@ -2,17 +2,22 @@
 
 The Control Layer forms the decision-making core of RobotZero, managing the robot's behaviour in response to sensor inputs and track conditions. This layer translates raw sensor data into actionable controls, implementing the robot's core line-following logic while managing special track features like markers and intersections. Operating between the Hardware Interface Layer and the Main Control system, it ensures smooth and predictable robot behaviour under varying conditions.
 
+>**TODO**: This version of CourseMarkers has not been run yet. At this stage of development (Dec/2024), this code is purely theoretical and REQUIRES EXTENSIVE TESTING. This implementation represents our current design approach but has not been validated in real-world conditions.
+
 The `CourseMarkers` class represents the primary control component, implementing track feature detection and corresponding behaviour adjustments. This class processes marker sensor data to identify track features and manages the robot's response to these features, including speed changes, lap counting, and precision mode transitions. Through its state machine implementation, it ensures reliable detection of track features and smooth transitions between different operating modes.
 
 The `ProfileManager` class complements the control system by managing operation profiles and parameters based on the current debug level. When `DEBUG_LEVEL` is greater than `0`, it provides different speed and control parameter sets optimized for either analysis (`DEBUG_LEVEL = 1`) or high-speed performance (`DEBUG_LEVEL = 2`). This class enables the robot to maintain consistent control logic while operating under different performance requirements, making it an essential component for both development and competition scenarios.
 
-## CourseMarkers Implementation
+## CourseMarkers Implementation (CourseMakers.h / CourseMakers.cpp)
 
-The CourseMarkers class manages track feature detection and robot behaviour through a state-based approach:
+The CourseMarkers class manages track feature detection and robot behaviour through an optimized state-based approach:
 
-``` cpp
+```cpp
 class CourseMarkers {
 private:
+    // Timing control
+    static uint32_t lastReadTime;
+    
     // State variables
     static int speed;
     static int lastMarkerState;
@@ -30,63 +35,46 @@ private:
     // Timers for precise control
     static Timer stopTimer;
     static Timer slowdownTimer;
-
-    // Internal methods
-    static void readCourseMarkers();
-    static void handleFinishLine();
-    static void handleSpeedMode();
-    static void handleIntersection();
-
-public:
-    // Public methods
-    static void processMarkerSignals();
-    static int speedControl(int error);
 };
 ```
 
-The marker detection system operates through the `readCourseMarkers` method, which processes analog readings from dedicated marker sensors:
+A key innovation in the marker detection system is its time-controlled operation:
 
-``` cpp
+```cpp
 void CourseMarkers::readCourseMarkers() {
-    leftMarkerDetected = analogRead(PIN_MARKER_LEFT);
-    rightMarkerDetected = analogRead(PIN_MARKER_RIGHT);
-
-    bool ledState = false;
-
-    if (leftMarkerDetected > MARKER_DETECTION_THRESHOLD) {
-        leftMarkerDetected = 0;
+    // Time-controlled reading
+    uint32_t currentTime = millis();
+    if (currentTime - lastReadTime < MARKER_READ_INTERVAL) {
+        return;
     }
-    else {
-        leftMarkerDetected = 1;
-        ledState = true;
-    }
+    lastReadTime = currentTime;
 
-    if (rightMarkerDetected > MARKER_DETECTION_THRESHOLD) {
-        rightMarkerDetected = 0;
-    }
-    else {
-        rightMarkerDetected = 1;
-        ledState = true;
-    }
+    // Optimized marker reading with direct state calculation
+    bool leftDetected = analogRead(PIN_MARKER_LEFT) <= MARKER_DETECTION_THRESHOLD;
+    bool rightDetected = analogRead(PIN_MARKER_RIGHT) <= MARKER_DETECTION_THRESHOLD;
+    currentMarkerState = (leftDetected << 1) | rightDetected;
 
-    digitalWrite(PIN_STATUS_LED, ledState);
+    // LED feedback only when needed
+    digitalWrite(PIN_STATUS_LED, leftDetected || rightDetected);
 }
 ```
 
-Speed control is managed through a system that takes into account the robot's current state and track conditions:
+The speed control system implements an optimized decision tree for quick response:
 
-``` cpp
+```cpp
 int CourseMarkers::speedControl(int error) {
+    // Early curve detection
     bool curve_detected = abs(error) > TURN_THRESHOLD;
-    bool straight_detected = abs(error) < STRAIGHT_THRESHOLD;
-    int target_speed;
-
     if (curve_detected) {
         isTurning = true;
         isExitingTurn = false;
-        target_speed = TURN_SPEED;
+        return TURN_SPEED;
     }
-    else if (straight_detected) {
+
+    bool straight_detected = abs(error) < STRAIGHT_THRESHOLD;
+    int target_speed;
+
+    if (straight_detected) {
         if (isTurning) {
             isExitingTurn = true;
             boostCountdown = BOOST_DURATION;
@@ -102,13 +90,13 @@ int CourseMarkers::speedControl(int error) {
             TURN_SPEED);
     }
 
+    // Optimized speed adjustment
     if (isExitingTurn && boostCountdown > 0 && !isPrecisionMode) {
-        target_speed = min(255, target_speed + 30);
+        target_speed = min(255, target_speed + BOOST_INCREMENT);
         boostCountdown--;
     }
 
     int step = (target_speed > currentSpeed) ? ACCELERATION_STEP : BRAKE_STEP;
-
     if (abs(target_speed - currentSpeed) <= step) {
         currentSpeed = target_speed;
     }
@@ -121,75 +109,46 @@ int CourseMarkers::speedControl(int error) {
 }
 ```
 
-The `processMarkerSignals` method ties everything together, managing the robot's response to detected markers:
+The marker processing system uses an efficient state machine with four states:
 
-``` cpp
+- State 0: No markers detected
+- State 1: Left marker only
+- State 2: Right marker only
+- State 3: Both markers detected
+
+The state machine implementation processes changes only when necessary:
+
+```cpp
 void CourseMarkers::processMarkerSignals() {
     readCourseMarkers();
 
-    if ((leftMarkerDetected == 0) && (rightMarkerDetected == 0)) 
-        currentMarkerState = 0;
-    if ((leftMarkerDetected == 1) && (rightMarkerDetected == 0)) 
-        currentMarkerState = 1;
-    if ((leftMarkerDetected == 0) && (rightMarkerDetected == 1)) 
-        currentMarkerState = 2;
-    if ((leftMarkerDetected == 1) && (rightMarkerDetected == 1)) 
-        currentMarkerState = 3;
+    // Only process on state changes
+    if (lastMarkerState == currentMarkerState) {
+        return;
+    }
 
-    if (lastMarkerState != currentMarkerState) {
-        if (currentMarkerState == 0 && lastMarkerState == 2 && 
-            previousMarkerState == 0) {
+    // State machine for marker processing
+    switch (currentMarkerState) {
+    case 0: // No markers
+        if (lastMarkerState == 2 && previousMarkerState == 0) {
             handleFinishLine();
         }
-        if (currentMarkerState == 0 && lastMarkerState == 1 && 
-            previousMarkerState == 0) {
+        else if (lastMarkerState == 1 && previousMarkerState == 0) {
             handleSpeedMode();
         }
-        if (currentMarkerState == 0 && ((lastMarkerState == 3) || 
-            (previousMarkerState == 3) || (oldMarkerState == 3))) {
+        else if (lastMarkerState == 3 || previousMarkerState == 3 || 
+                 oldMarkerState == 3) {
             handleIntersection();
         }
-        oldMarkerState = previousMarkerState;
-        previousMarkerState = lastMarkerState;
-        lastMarkerState = currentMarkerState;
+        break;
     }
-
-    if (isStopSequenceActive && !isRobotStopped) {
-        if (!slowdownTimer.Expired() && currentSpeed > SPEED_BRAKE) {
-            currentSpeed = SPEED_BRAKE;
-        }
-        else if (stopTimer.Expired()) {
-            currentSpeed = 0;
-            MotorDriver::setMotorsPower(0, 0);
-            isRobotStopped = true;
-        }
-    }
+    
+    // Update state history
+    oldMarkerState = previousMarkerState;
+    previousMarkerState = lastMarkerState;
+    lastMarkerState = currentMarkerState;
 }
 ```
-
-The state machine implementation uses a combination of current and historical marker states to reliably detect track features and transitions. The system maintains four state variables:
-
-`currentMarkerState`: The present state based on marker sensors; `lastMarkerState`: The immediately previous state; `previousMarkerState`: The state before the last; `oldMarkerState`: The third previous state.
-
-Each marker state can be one of four conditions:
-
-`0`: No markers detected (both sensors reading 0);
-
-`1`: Left marker only (left sensor = 1, right sensor = 0);
-
-`2`: Right marker only (left sensor = 0, right sensor = 1);
-
-`3`: Both markers (both sensors reading 1);
-
-The state transitions trigger specific behaviors:
-
--   Finish Line Detection: Identified by the sequence \[0 → 2 → 0\], representing a clean pass over the right marker;
-
--   Speed Mode Change: Detected by \[0 → 1 → 0\], indicating a left marker pass;
-
--   Intersection Detection: Triggered by any sequence containing state 3 (both markers) within the last three states.
-
-This multi-state history approach helps filter out false readings and ensures reliable feature detection even at high speeds or under varying light conditions. Each state change is processed only once, and the system maintains proper operation even when markers are detected in rapid succession.
 
 ## ProfileManager Implementation
 
@@ -292,7 +251,7 @@ const SpeedProfile ProfileManager::SPEED_PROFILE = {
 ```
 
 > **Implementation Note:**  
-> TODO: These variables should be transferred to macros or constexpr's in the configuration layer, maintaining the system's design principles of compile-time optimization and centralized configuration.
+> **TODO**: These variables should be transferred to macros or constexpr's in the configuration layer, maintaining the system's design principles of compile-time optimization and centralized configuration.
 
 The translation between default values and profile-specific values is handled through the `getSpeedValue` method:
 
