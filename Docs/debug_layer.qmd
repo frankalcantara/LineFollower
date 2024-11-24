@@ -225,4 +225,4 @@ Patterns indicate:
 - Active data transfer (3.3Hz blink)
 - Operation completion
 
-This comprehensive debug system enables detailed analysis of RobotZero's behavior while maintaining efficient operation through careful resource management and conditional compilation.
+This comprehensive debug system enables detailed analysis of RobotZero's behaviour while maintaining efficient operation through careful resource management and conditional compilation.
