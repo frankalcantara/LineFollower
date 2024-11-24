@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -181,6 +201,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="./control_layer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Control Layer Implementation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./testing_guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Line Following Robot Test Guide</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
   </div>
 </li>
     </ul>
@@ -335,20 +367,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="timing-parameters" class="level3" data-number="4.1.5">
 <h3 data-number="4.1.5" class="anchored" data-anchor-id="timing-parameters"><span class="header-section-number">4.1.5</span> Timing Parameters</h3>
-<p>Controls various timing aspects of the robot’s operation.</p>
+<p>The timing parameters control various time-dependent aspects of the robot’s operation, each carefully tuned for optimal performance:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Delays and Timings</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">uint16_t</span> SETUP_DELAY <span class="op">=</span> <span class="dv">600</span><span class="op">;</span>           <span class="co">// Initial setup</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">uint16_t</span> CALIBRATION_SAMPLES <span class="op">=</span> <span class="dv">400</span><span class="op">;</span>   <span class="co">// Calibration precision</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">uint8_t</span> CALIBRATION_DELAY <span class="op">=</span> <span class="dv">30</span><span class="op">;</span>       <span class="co">// Sample interval</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">uint16_t</span> STOP_DELAY <span class="op">=</span> <span class="dv">300</span><span class="op">;</span>            <span class="co">// Final stop timing</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">uint16_t</span> DEBOUNCE_DELAY <span class="op">=</span> <span class="dv">50</span><span class="op">;</span>         <span class="co">// Button debounce</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The timing parameters, all specified in milliseconds, govern critical operational sequences of the robot. The <code>SETUP_DELAY</code> of <code>600ms</code> allows the system to stabilize after power-up, ensuring all sensors and components are ready for operation. During calibration, the system takes <code>400</code> samples (<code>CALIBRATION_SAMPLES</code>) from each sensor, with a <code>30ms</code> interval (<code>CALIBRATION_DELAY</code>) between samples, providing a comprehensive baseline for sensor readings while balancing between accuracy and calibration time - resulting in a total calibration period of approximately <code>12 seconds</code>. When the robot detects its final lap marker, it initiates a controlled stop sequence lasting <code>300ms</code> (<code>STOP_DELAY</code>), allowing for smooth deceleration. Button inputs are processed with a <code>50ms</code> debounce period (<code>DEBOUNCE_DELAY</code>), effectively filtering out mechanical noise and contact bounce while maintaining responsive user interaction.</p>
-<p>These timing values were established during the November 2024 competition where RoboZero secured second place, proving their effectiveness under competitive conditions.</p>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="at">const</span> <span class="dt">uint16_t</span> DEBOUNCE_DELAY <span class="op">=</span> <span class="dv">50</span><span class="op">;</span>         <span class="co">// Button debounce</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">uint16_t</span> MARKER_READ_INTERVAL <span class="op">=</span> <span class="dv">2</span><span class="op">;</span> <span class="co">// Marker reading interval</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Each timing parameter serves a specific purpose in the system:</p>
+<ul>
+<li><code>SETUP_DELAY</code> (600ms): Allows system stabilization after power-up</li>
+<li><code>CALIBRATION_SAMPLES</code> (400) and <code>CALIBRATION_DELAY</code> (30ms): Controls sensor calibration timing</li>
+<li><code>STOP_DELAY</code> (300ms): Controls gradual deceleration sequence</li>
+<li><code>DEBOUNCE_DELAY</code> (50ms): Ensures reliable button operation</li>
+<li><code>MARKER_READ_INTERVAL</code> (2ms): Controls the frequency of marker sensor readings</li>
+</ul>
+<p>The <code>MARKER_READ_INTERVAL</code> parameter is particularly crucial for the CourseMarkers system. It ensures consistent and efficient marker detection by establishing a fixed interval between marker sensor readings. This <code>2ms</code> interval was chosen to balance between: Detection reliability (frequent enough to not miss markers); Processing efficiency (not reading unnecessarily often) and System responsiveness (minimal delay in marker detection).</p>
 </section>
 </section>
 <section id="global-variables-management-globals.h" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="global-variables-management-globals.h"><span class="header-section-number">4.2</span> Global Variables Management (globals.h)</h2>
-<p>The <code>globals.h</code> file represents a strategic decision in RobotZero’s architecture, implementing a carefully selected set of global variables that require system-wide access. While global variables are generally discouraged in software development, their use here is justified by the real-time nature of the system and the Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>)’s limited resources.</p>
+<p>The <code>globals.h</code> file represents a strategic decision in RobotZero’s architecture, implementing a carefully selected set of global variables that require system-wide access. While global variables are generally discouraged in software development, their use here is justified by the real-time nature of the system and the Arduino Nano’s <span class="citation" data-cites="ArduinoNano">(<a href="references.html#ref-ArduinoNano" role="doc-biblioref">Arduino 2024</a>)</span> limited resources.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef GLOBALS_H</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define GLOBALS_H</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -388,7 +428,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">char</span> DEBUG_INTERSECTION<span class="op">[]</span> PROGMEM <span class="op">=</span> <span class="st">"Intersection detected"</span><span class="op">;</span></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">char</span> DEBUG_SETUP_START<span class="op">[]</span> PROGMEM <span class="op">=</span> <span class="st">"Starting setup"</span><span class="op">;</span></span>
 <span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">char</span> DEBUG_SETUP_COMPLETE<span class="op">[]</span> PROGMEM <span class="op">=</span> <span class="st">"Setup completed"</span><span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>These string constants are stored in program memory using the <code>PROGMEM</code> attribute. This approach saves precious RAM space on the Arduino Nano (<span class="citation" data-cites="ArduinoNano">@ArduinoNano</span>), which only has <code>2KB</code> available. To facilitate reading these stored strings, the system implements a helper function:</p>
+<p>These string constants are stored in program memory using the <code>PROGMEM</code> attribute. This approach saves precious RAM space on the Arduino Nano (<span class="citation" data-cites="ArduinoNano">(<a href="references.html#ref-ArduinoNano" role="doc-biblioref">Arduino 2024</a>)</span>), which only has <code>2KB</code> available. To facilitate reading these stored strings, the system implements a helper function:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Helper function to print strings from Flash</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">inline</span> <span class="dt">void</span> debugPrintFlash<span class="op">(</span><span class="at">const</span> <span class="dt">char</span><span class="op">*</span> str<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> c<span class="op">;</span></span>
@@ -421,6 +461,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The system outputs debug information at <code>115200</code> baud when enabled, allowing real-time monitoring of the robot’s behaviour while maintaining efficient execution.</p>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-ArduinoNano" class="csl-entry" role="listitem">
+Arduino. 2024. <span>“Arduino Nano (@ArduinoNano).”</span> 2024. <a href="https://docs.arduino.cc/hardware/nano/">https://docs.arduino.cc/hardware/nano/</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->
@@ -751,7 +796,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // **TODO** in 1.5, we should make sure this works without a callout special case
+      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

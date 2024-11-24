@@ -3,6 +3,7 @@ project:
   resources:
     - "images/"
     - "styles/"
+  output-dir: _output
 
 book:
   title: "RobotZero"
@@ -15,10 +16,15 @@ book:
     - block.qmd
     - config_layer.qmd
     - control_layer.qmd
+    - testing_guide.qmd
+    - references.qmd
   page-footer: "Copyright © 2024 Frank de Alcantara"
   site-url: https://frankalcantara.com
   repo-url: https://github.com/frankalcantara/linefollower
   repo-actions: [edit, issue]
+
+bibliography: references.bib
+
 format:
   html:
     open-graph: true
@@ -46,8 +52,8 @@ format:
         - about.qmd
       right:
         - icon: github
-          href: https://github.com/frankalcantara/linefollower 
-    pdf:
+          href: https://github.com/frankalcantara/linefollower
+  pdf:
     documentclass: scrreprt
     papersize: a4paper
     geometry:
@@ -59,21 +65,20 @@ format:
     number-sections: true
     colorlinks: true
     latex-auto-install: true
-    bibliography: references.bib
     toc-title: "Contents"
     language: _language.yml
     include-in-header:
       text: |
         \usepackage{fancyhdr}
         \pagestyle{fancy}
-        \renewcommand{\headrulewidth}{1pt}  
-        \fancyhead[L]{\leftmark}  
-        \fancyhead[C]{} 
-        \fancyhead[R]{\thepage} 
-        \usepackage[brazilian, provide=*]{babel}  
+        \renewcommand{\headrulewidth}{1pt}
+        \fancyhead[L]{\leftmark}
+        \fancyhead[C]{}
+        \fancyhead[R]{\thepage}
+        \usepackage[brazilian, provide=*]{babel}
         \usepackage[brazilian=nohyphenation]{hyphsubst}
         \addto\captionsbrazilian{\renewcommand{\contentsname}{Sumário}}
-        \fancyfoot{}  
+        \fancyfoot{}
 
         \usepackage{graphicx}
         \usepackage{epigraph}
@@ -82,7 +87,7 @@ format:
         \usepackage{float}
         \usepackage{mathtools}
         \usepackage{amsmath}
-        \usepackage{tikz}  % Inclusão do pacote TikZ
+        \usepackage{tikz}
         \usepackage{amssymb}
         \usepackage{array}
         \usepackage{qtree}
@@ -90,21 +95,20 @@ format:
         \usepackage{booktabs}
         \usepackage{tcolorbox}
         
-        % Definindo cores RGB personalizadas
-        \definecolor{contentbg}{rgb}{0.9, 0.9, 0.9}     % Cor do fundo do conteúdo
-        \definecolor{titlebg}{rgb}{0.2, 0.4, 0.8}          % Cor do fundo do título
+        \definecolor{contentbg}{rgb}{0.9, 0.9, 0.9}
+        \definecolor{titlebg}{rgb}{0.2, 0.4, 0.8}
         
-        \tcbuselibrary{theorems}  % Carregar biblioteca fora do bloco tcbset
+        \tcbuselibrary{theorems}
         \tcbset{
             myboxstyle/.style={
-                colback=contentbg,        % Cor de fundo do conteúdo
-                colframe=black,           % Cor da borda
-                coltitle=white,           % Cor do texto do título
-                colbacktitle=titlebg,     % Cor de fundo do título
-                fonttitle=\bfseries,      % Formatação do título
-                boxrule=0.5mm,            % Espessura da borda
-                width=\linewidth,         % Largura da caixa
-                arc=4mm                   % Arredondamento dos cantos
+                colback=contentbg,
+                colframe=black,
+                coltitle=white,
+                colbacktitle=titlebg,
+                fonttitle=\bfseries,
+                boxrule=0.5mm,
+                width=\linewidth,
+                arc=4mm
             }
         }
         
@@ -128,4 +132,3 @@ format:
         
         \renewcommand{\floatpagefraction}{.8}
         \renewcommand{\textfraction}{.1}
-  

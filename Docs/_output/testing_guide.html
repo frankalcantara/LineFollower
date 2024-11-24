@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>RobotZero - 2&nbsp; Line Following Robot Operation</title>
+<title>RobotZero - 6&nbsp; Line Following Robot Test Guide</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,8 +30,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./block.html" rel="next">
-<link href="./index.html" rel="prev">
+<link href="./references.html" rel="next">
+<link href="./control_layer.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -70,82 +70,18 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<meta property="og:title" content="RobotZero - 2&nbsp; Line Following Robot Operation">
-<meta property="og:description" content="">
-<meta property="og:site_name" content="RobotZero">
-<meta name="twitter:title" content="RobotZero - 2&nbsp; Line Following Robot Operation">
-<meta name="twitter:description" content="">
-<meta name="twitter:card" content="summary">
-</head><body class="nav-sidebar floating">\usepackage{fancyhdr}
-\pagestyle{fancy}
-\renewcommand{\headrulewidth}{1pt}  
-\fancyhead[L]{\leftmark}  
-\fancyhead[C]{} 
-\fancyhead[R]{\thepage} 
-\usepackage[brazilian, provide=*]{babel}  
-\usepackage[brazilian=nohyphenation]{hyphsubst}
-\addto\captionsbrazilian{\renewcommand{\contentsname}{Sumário}}
-\fancyfoot{}  
-
-\usepackage{graphicx}
-\usepackage{epigraph}
-\usepackage{xcolor}
-\usepackage{listings}
-\usepackage{float}
-\usepackage{mathtools}
-\usepackage{amsmath}
-\usepackage{tikz}  % Inclusão do pacote TikZ
-\usepackage{amssymb}
-\usepackage{array}
-\usepackage{qtree}
-\usepackage{forest}
-\usepackage{booktabs}
-\usepackage{tcolorbox}
-
-% Definindo cores RGB personalizadas
-\definecolor{contentbg}{rgb}{0.9, 0.9, 0.9}     % Cor do fundo do conteúdo
-\definecolor{titlebg}{rgb}{0.2, 0.4, 0.8}          % Cor do fundo do título
-
-\tcbuselibrary{theorems}  % Carregar biblioteca fora do bloco tcbset
-\tcbset{
-    myboxstyle/.style={
-        colback=contentbg,        % Cor de fundo do conteúdo
-        colframe=black,           % Cor da borda
-        coltitle=white,           % Cor do texto do título
-        colbacktitle=titlebg,     % Cor de fundo do título
-        fonttitle=\bfseries,      % Formatação do título
-        boxrule=0.5mm,            % Espessura da borda
-        width=\linewidth,         % Largura da caixa
-        arc=4mm                   % Arredondamento dos cantos
-    }
-}
-
-\lstset{
-  language=Haskell,
-  basicstyle=\ttfamily\small,
-  keywordstyle=\color{blue},
-  commentstyle=\color{gray},
-  stringstyle=\color{red},
-  numbers=left,
-  numberstyle=\tiny\color{gray},
-  stepnumber=1,
-  numbersep=5pt,
-  frame=single,
-  showspaces=false,
-  showstringspaces=false,
-  breaklines=true,
-  breakatwhitespace=true,
-  tabsize=2
-}
-
-\renewcommand{\floatpagefraction}{.8}
-\renewcommand{\textfraction}{.1}
 
 
 <link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="RobotZero - 6&nbsp; Line Following Robot Test Guide">
+<meta property="og:description" content="">
+<meta property="og:site_name" content="RobotZero">
+<meta name="twitter:title" content="RobotZero - 6&nbsp; Line Following Robot Test Guide">
+<meta name="twitter:description" content="">
+<meta name="twitter:card" content="summary">
+</head>
 
-
-
+<body class="nav-sidebar floating">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -154,7 +90,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./oper.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Line Following Robot Operation</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./testing_guide.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Line Following Robot Test Guide</span></a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -191,7 +127,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./oper.html" class="sidebar-item-text sidebar-link active">
+  <a href="./oper.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Line Following Robot Operation</span></span></a>
   </div>
 </li>
@@ -213,6 +149,18 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Control Layer Implementation</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./testing_guide.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Line Following Robot Test Guide</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -220,29 +168,28 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Contents</h2>
+    <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#operating-procedure" id="toc-operating-procedure" class="nav-link active" data-scroll-target="#operating-procedure"><span class="header-section-number">2.1</span> Operating Procedure</a>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">6.1</span> Introduction</a></li>
+  <li><a href="#test-programs" id="toc-test-programs" class="nav-link" data-scroll-target="#test-programs"><span class="header-section-number">6.2</span> Test Programs</a>
   <ul class="collapse">
-  <li><a href="#initial-setup" id="toc-initial-setup" class="nav-link" data-scroll-target="#initial-setup"><span class="header-section-number">2.1.1</span> Initial Setup</a></li>
-  <li><a href="#calibration-process" id="toc-calibration-process" class="nav-link" data-scroll-target="#calibration-process"><span class="header-section-number">2.1.2</span> Calibration Process</a></li>
-  <li><a href="#operation-start" id="toc-operation-start" class="nav-link" data-scroll-target="#operation-start"><span class="header-section-number">2.1.3</span> Operation Start</a></li>
-  <li><a href="#during-operation" id="toc-during-operation" class="nav-link" data-scroll-target="#during-operation"><span class="header-section-number">2.1.4</span> During Operation</a></li>
-  <li><a href="#stop-sequence" id="toc-stop-sequence" class="nav-link" data-scroll-target="#stop-sequence"><span class="header-section-number">2.1.5</span> Stop Sequence</a></li>
-  <li><a href="#data-retrieval-debug-mode-only" id="toc-data-retrieval-debug-mode-only" class="nav-link" data-scroll-target="#data-retrieval-debug-mode-only"><span class="header-section-number">2.1.6</span> Data Retrieval (Debug Mode Only)</a></li>
-  <li><a href="#error-recovery" id="toc-error-recovery" class="nav-link" data-scroll-target="#error-recovery"><span class="header-section-number">2.1.7</span> Error Recovery</a></li>
-  <li><a href="#operating-modes" id="toc-operating-modes" class="nav-link" data-scroll-target="#operating-modes"><span class="header-section-number">2.1.8</span> Operating Modes</a></li>
+  <li><a href="#line-sensors-test" id="toc-line-sensors-test" class="nav-link" data-scroll-target="#line-sensors-test"><span class="header-section-number">6.2.1</span> 1. Line Sensors Test</a></li>
+  <li><a href="#marker-sensors-test" id="toc-marker-sensors-test" class="nav-link" data-scroll-target="#marker-sensors-test"><span class="header-section-number">6.2.2</span> 2. Marker Sensors Test</a></li>
+  <li><a href="#motors-test" id="toc-motors-test" class="nav-link" data-scroll-target="#motors-test"><span class="header-section-number">6.2.3</span> 3. Motors Test</a></li>
+  <li><a href="#button-and-led-test" id="toc-button-and-led-test" class="nav-link" data-scroll-target="#button-and-led-test"><span class="header-section-number">6.2.4</span> 4. Button and LED Test</a></li>
+  <li><a href="#line-sensor-calibration-test" id="toc-line-sensor-calibration-test" class="nav-link" data-scroll-target="#line-sensor-calibration-test"><span class="header-section-number">6.2.5</span> 5. Line Sensor Calibration Test</a></li>
   </ul></li>
+  <li><a href="#general-tips" id="toc-general-tips" class="nav-link" data-scroll-target="#general-tips"><span class="header-section-number">6.3</span> General Tips</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/oper.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/testing_guide.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Line Following Robot Operation</span></h1>
+<h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Line Following Robot Test Guide</span></h1>
 </div>
 
 
@@ -259,109 +206,69 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The robot’s operation is divided into two distinct configuration levels: build-time configuration through software compilation and runtime operation of RoboZero.</p>
-<p>At build time, critical parameters are set through compilation flags and constants. The DEBUG_LEVEL flag determines the robot’s operational mode: normal operation (0), analysis mode (1), or speed mode (2). Each mode compiles with different features and behaviors. Other build-time configurations include PID default constants, sensor weights, speed profiles, and timing parameters. These decisions fundamentally shape the robot’s behavior and available features.</p>
-<p>During runtime operation, the robot’s functioning begins with a calibration phase, essential for adapting to varying lighting conditions and surface characteristics. Upon powering up, the robot waits for the first button press, which initiates the calibration sequence. During calibration, the robot samples each of its six line sensors multiple times, establishing minimum and maximum values for each sensor. These values create a baseline for converting raw sensor readings into meaningful position data.</p>
-<p>After calibration, the robot waits for a second button press to begin its line following operation. The six-sensor array continuously reads the line position, with the outer sensors serving as markers for extreme deviations and the inner sensors providing precise positioning data. Each sensor reading is normalized using the calibration data and weighted based on its position in the array. The weighted average of these readings determines the robot’s position relative to the line.</p>
-<p>The control system operates on a continuous loop, processing sensor data and adjusting motor outputs. A PID (Proportional-Integral-Derivative) controller calculates the necessary corrections based on the line position error - the difference between the current position and the desired center position. The proportional component provides immediate response to position errors, while the derivative component helps predict and dampen oscillations, resulting in smooth motion.</p>
-<p>Speed control is managed dynamically based on the current situation. In straight sections, the robot can maintain higher speeds, while curves require speed adjustment for stability. The system includes a boost mechanism that temporarily increases speed when exiting curves to optimize lap times. The operating mode, determined at build time, affects the available speed ranges and control parameters.</p>
-<p>Course markers on the track trigger specific behaviors. The robot can detect intersections, lap markers, and mode-change markers using dedicated marker sensors. When passing over these markers, the robot adjusts its operation accordingly - counting laps, changing speeds, or preparing to stop. The system is designed to complete a configurable number of laps before automatically stopping.</p>
-<p>If compiled with debugging enabled (DEBUG_LEVEL &gt; 0), the logging system operates continuously during the robot’s operation. In analysis mode, it captures detailed performance data including line position, error values, motor speeds, and PID corrections. This data is temporarily stored in circular buffers and written to flash memory when safe conditions are met - typically during straight sections where precise control is less critical. The system also records significant events such as marker detections, mode changes, and lap completions.</p>
-<p>When the programmed number of laps is completed, the robot enters its stopping sequence. It gradually reduces speed to ensure controlled deceleration and precise stopping. After stopping, if debugging is enabled, the collected performance data remains stored in flash memory, ready for retrieval and analysis.</p>
-<p>Data retrieval, available only in debug builds, occurs through a USB interface when the robot is stationary. Upon receiving the appropriate command through the serial interface, the robot transmits its stored data in a structured format, including session headers, performance records, event logs, and lap statistics. This data can then be analyzed to optimize the robot’s parameters such as PID constants, speed profiles, and acceleration rates.</p>
-<p>The entire system prioritizes real-time performance while ensuring data collection doesn’t interfere with the robot’s primary line-following function. Error checking and recovery mechanisms are implemented throughout the system, from sensor reading validation to data storage verification, ensuring reliable operation even under challenging conditions.</p>
-<section id="operating-procedure" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="operating-procedure"><span class="header-section-number">2.1</span> Operating Procedure</h2>
-<section id="initial-setup" class="level3" data-number="2.1.1">
-<h3 data-number="2.1.1" class="anchored" data-anchor-id="initial-setup"><span class="header-section-number">2.1.1</span> Initial Setup</h3>
+<section id="introduction" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">6.1</span> Introduction</h2>
+<p>This document describes five independent test programs designed to verify the proper functioning of different components in your line following robot. Each test is a separate project that must be uploaded individually to your Arduino Nano. This modular approach allows for focused testing of each component without interference from other systems.</p>
+<p>IMPORTANT: Do not attempt to combine these tests into a single program. Each test should be uploaded separately to ensure accurate results.</p>
+</section>
+<section id="test-programs" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="test-programs"><span class="header-section-number">6.2</span> Test Programs</h2>
+<section id="line-sensors-test" class="level3" data-number="6.2.1">
+<h3 data-number="6.2.1" class="anchored" data-anchor-id="line-sensors-test"><span class="header-section-number">6.2.1</span> 1. Line Sensors Test</h3>
+<p><strong>Purpose</strong>: Verify the proper functioning of the line sensors array.</p>
+<p><strong>Setup</strong>: 1. Upload the <code>line-sensor-test</code> program to your Arduino Nano 2. Open Serial Monitor (9600 baud) 3. Place your robot on a test surface with your line</p>
+<p><strong>Test Procedure</strong>: 1. Move the robot slowly across the line 2. The LED will blink briefly each time a sensor transitions from low to high 3. The Serial Monitor will display which sensor detected the transition and its reading 4. Test each sensor by ensuring the line crosses all sensors</p>
+<p><strong>Expected Results</strong>: - LED should blink when sensors cross the line - Serial Monitor should show sensor readings - All sensors should detect the line when crossed - Readings should change significantly between line and surface</p>
+<p><strong>Troubleshooting</strong>: - If a sensor never triggers, check its connections - If readings are inconsistent, check sensor height from surface - If LED doesn’t blink, verify LED pin connection - If no serial output, check baud rate settings</p>
+</section>
+<section id="marker-sensors-test" class="level3" data-number="6.2.2">
+<h3 data-number="6.2.2" class="anchored" data-anchor-id="marker-sensors-test"><span class="header-section-number">6.2.2</span> 2. Marker Sensors Test</h3>
+<p><strong>Purpose</strong>: Verify the proper functioning of the course marker sensors.</p>
+<p><strong>Setup</strong>: 1. Upload the <code>marker-sensor-test</code> program 2. Open Serial Monitor (9600 baud) 3. Prepare test markers (either actual course markers or test material)</p>
+<p><strong>Test Procedure</strong>: 1. Move the robot over each marker 2. Observe LED behaviour and Serial Monitor output 3. Test both left and right marker sensors 4. Try different marker positions and angles</p>
+<p><strong>Expected Results</strong>: - LED should blink when marker is detected - Serial Monitor should show which sensor detected the marker - Both left and right sensors should work independently - Readings should be consistent for similar marker positions</p>
+<p><strong>Troubleshooting</strong>: - If markers aren’t detected, adjust MARKER_THRESHOLD value - Check sensor height if detection is inconsistent - Verify sensor connections if one side isn’t working - Test with different marker materials if detection is poor</p>
+</section>
+<section id="motors-test" class="level3" data-number="6.2.3">
+<h3 data-number="6.2.3" class="anchored" data-anchor-id="motors-test"><span class="header-section-number">6.2.3</span> 3. Motors Test</h3>
+<p><strong>Purpose</strong>: Verify proper motor function and movement patterns.</p>
+<p><strong>Setup</strong>: 1. Upload the <code>motor-test</code> program 2. Place robot on elevated surface or testing stand 3. Ensure adequate space for movement 4. Keep USB cable clear of wheels</p>
+<p><strong>Test Procedure</strong>: The robot will automatically perform this sequence: 1. Move forward 2. Stop 3. Turn right 4. Stop 5. Turn left 6. Stop 7. Complete full turn 8. Stop 9. Move backward 10. Stop 11. Led blinking for 5 seconds 12. Maximum speed running in straight line for 3s. 13. Stop.</p>
+<p><strong>Expected Results</strong>: - Motors should run smoothly in all directions - Robot should stop completely between movements - Turns should be consistent - Motor speed should be steady</p>
+<p><strong>Troubleshooting</strong>: - If motors don’t turn, check connections - For uneven movement, verify wheel attachment - If speed seems wrong, adjust MOTOR_SPEED constant - For erratic behaviour, check battery voltage</p>
+</section>
+<section id="button-and-led-test" class="level3" data-number="6.2.4">
+<h3 data-number="6.2.4" class="anchored" data-anchor-id="button-and-led-test"><span class="header-section-number">6.2.4</span> 4. Button and LED Test</h3>
+<p><strong>Purpose</strong>: Verify button operation and LED signalling.</p>
+<p><strong>Setup</strong>: 1. Upload the <code>button-led-test</code> program 2. Open Serial Monitor (9600 baud)</p>
+<p><strong>Test Procedure</strong>: 1. Press button to cycle through LED modes: - Mode 0: LED off - Mode 1: LED constantly on - Mode 2: Slow blink (1 Hz) - Mode 3: Fast blink (5 Hz) 2. Test multiple button presses 3. Observe LED behaviour in each mode</p>
+<p><strong>Expected Results</strong>: - Button should register each press cleanly - LED should change modes with each press - Serial Monitor should show mode changes - LED patterns should be clear and consistent</p>
+<p><strong>Troubleshooting</strong>: - If button seems unresponsive, check debounce timing - For LED issues, verify PIN_STATUS_LED connection - If modes skip, adjust DEBOUNCE_DELAY - Check button wiring if no response</p>
+</section>
+<section id="line-sensor-calibration-test" class="level3" data-number="6.2.5">
+<h3 data-number="6.2.5" class="anchored" data-anchor-id="line-sensor-calibration-test"><span class="header-section-number">6.2.5</span> 5. Line Sensor Calibration Test</h3>
+<p><strong>Purpose</strong>: Calibrate line sensors and establish proper thresholds.</p>
+<p><strong>Setup</strong>: 1. Upload the <code>line-calibration-test</code> program 2. Open Serial Monitor (9600 baud) 3. Prepare test surface with line</p>
+<p><strong>Test Procedure</strong>: 1. Place robot on testing surface 2. Press button to start calibration 3. During the 3-second calibration period: - Move robot over the line multiple times - Cover all sensors - Move at different angles 4. Observe final calibration values</p>
+<p><strong>Expected Results</strong>: - LED blinks rapidly during calibration - Serial Monitor shows min/max values for each sensor - Clear difference between line and surface readings - Consistent readings across all sensors</p>
+<p><strong>Troubleshooting</strong>: - If ranges are too narrow, check sensor height - For inconsistent readings, clean sensors - If calibration fails, adjust CALIBRATION_TIME - Verify surface and line contrast if readings are close</p>
+</section>
+</section>
+<section id="general-tips" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="general-tips"><span class="header-section-number">6.3</span> General Tips</h2>
 <ol type="1">
-<li>Place the robot near the course</li>
-<li>Power on the robot</li>
-<li>Wait for initial setup delay (<code>600ms</code>)
-<ul>
-<li>Status LED will be on during this period</li>
-<li>Motors will be inactive</li>
-</ul></li>
-<li>After delay, LED turns off and robot is ready for calibration</li>
+<li>Always check battery voltage before testing</li>
+<li>Clean sensors before beginning tests</li>
+<li>Use a well-lit testing area</li>
+<li>Keep test surface clean and free of debris</li>
+<li>Document unusual readings for future reference</li>
+<li>Test one component at a time</li>
+<li>Verify USB connection if Serial Monitor shows no data</li>
 </ol>
-</section>
-<section id="calibration-process" class="level3" data-number="2.1.2">
-<h3 data-number="2.1.2" class="anchored" data-anchor-id="calibration-process"><span class="header-section-number">2.1.2</span> Calibration Process</h3>
-<ol type="1">
-<li>Press the start button for first calibration phase
-<ul>
-<li>LED will turn on</li>
-</ul></li>
-<li>The calibration process:
-<ul>
-<li>Takes 400 samples from each sensor</li>
-<li>30ms delay between samples (total ~12 seconds)</li>
-<li>Establishes minimum and maximum values for each sensor</li>
-</ul></li>
-<li>After calibration completes:
-<ul>
-<li>LED turns off</li>
-<li>Robot waits for second button press</li>
-</ul></li>
-</ol>
-</section>
-<section id="operation-start" class="level3" data-number="2.1.3">
-<h3 data-number="2.1.3" class="anchored" data-anchor-id="operation-start"><span class="header-section-number">2.1.3</span> Operation Start</h3>
-<ol type="1">
-<li>Place robot on the track</li>
-<li>Press start button again to begin operation
-<ul>
-<li>LED turns on</li>
-<li>Robot starts line following operation</li>
-</ul></li>
-<li>Initial operating parameters:
-<ul>
-<li>Speed mode begins at BASE_FAST (115)</li>
-<li>PID control active with default parameters</li>
-<li>Normal operating mode engaged</li>
-</ul></li>
-</ol>
-</section>
-<section id="during-operation" class="level3" data-number="2.1.4">
-<h3 data-number="2.1.4" class="anchored" data-anchor-id="during-operation"><span class="header-section-number">2.1.4</span> During Operation</h3>
-<p>The robot recognizes three marker patterns: 1. Finish line marker (both sensors) - Updates lap count - Triggers stop sequence on second detection 2. Speed mode marker (left sensor only) - Toggles between normal and precision mode - In precision mode: SPEED_SLOW - In normal mode: BASE_FAST 3. Intersection marker (both sensors) - Logged but no special action taken</p>
-</section>
-<section id="stop-sequence" class="level3" data-number="2.1.5">
-<h3 data-number="2.1.5" class="anchored" data-anchor-id="stop-sequence"><span class="header-section-number">2.1.5</span> Stop Sequence</h3>
-<p>The robot will stop automatically when: 1. Second finish line is detected 2. Stop sequence activates: - Speed reduces to SPEED_BRAKE - After 50ms deceleration - Final stop after 300ms - Motors power off</p>
-</section>
-<section id="data-retrieval-debug-mode-only" class="level3" data-number="2.1.6">
-<h3 data-number="2.1.6" class="anchored" data-anchor-id="data-retrieval-debug-mode-only"><span class="header-section-number">2.1.6</span> Data Retrieval (Debug Mode Only)</h3>
-<p>If DEBUG_LEVEL &gt; 0: 1. When robot stops, flash memory is marked as ready 2. LED displays transmission pattern: - Alternates between slow blink (1000ms) and fast blink (300ms) - Pattern switches every 3000ms 3. Data can be retrieved through serial interface 4. After successful transmission: - Log ready flag is cleared - LED pattern stops</p>
-</section>
-<section id="error-recovery" class="level3" data-number="2.1.7">
-<h3 data-number="2.1.7" class="anchored" data-anchor-id="error-recovery"><span class="header-section-number">2.1.7</span> Error Recovery</h3>
-<p>If line is lost: 1. Robot uses last valid position 2. Position is forced to extreme (-100 or 100) based on last direction 3. PID controller attempts to recover 4. Robot continues operation if line is found</p>
-</section>
-<section id="operating-modes" class="level3" data-number="2.1.8">
-<h3 data-number="2.1.8" class="anchored" data-anchor-id="operating-modes"><span class="header-section-number">2.1.8</span> Operating Modes</h3>
-<p>Two base operating speeds: 1. Normal Mode (BASE_FAST): - Base speed of 115 - Curve speed reduction active - Boost after curves (if not in precision mode)</p>
-<ol start="2" type="1">
-<li>Precision Mode:
-<ul>
-<li>Activated by left marker</li>
-<li>Uses SPEED_SLOW</li>
-<li>Disables boost feature</li>
-<li>More conservative operation</li>
-</ul></li>
-</ol>
-<p>Debug Operating Modes (if DEBUG_LEVEL &gt; 0): 1. Analysis Mode (DEBUG_LEVEL = 1): - 5 laps - Conservative speeds - Full data logging</p>
-<ol start="2" type="1">
-<li>Speed Mode (DEBUG_LEVEL = 2):
-<ul>
-<li>3 laps</li>
-<li>Maximum performance</li>
-<li>Full data logging</li>
-</ul></li>
-</ol>
+<p><strong>These tests should be performed in sequence when building a new robot or after any major modifications</strong>. Keep a log of typical values and behaviors for your specific robot - this will help identify issues in the future.</p>
+<p>Regular testing using these programs can help identify problems before they affect robot performance in competition. If any test fails, resolve the issue before moving to the next test.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -692,7 +599,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // **TODO** in 1.5, we should make sure this works without a callout special case
+      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {
@@ -920,13 +827,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Introduction">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span>
+      <a href="./control_layer.html" class="pagination-link" aria-label="Control Layer Implementation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Control Layer Implementation</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./block.html" class="pagination-link" aria-label="RoboZero Modules Description">
-        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RoboZero Modules Description</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./references.html" class="pagination-link" aria-label="References">
+        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
@@ -938,7 +845,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>   
     <div class="nav-footer-center">
 <p>Copyright © 2024 Frank de Alcantara</p>
-<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/oper.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/testing_guide.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>

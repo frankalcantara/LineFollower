@@ -1376,7 +1376,7 @@ url("./bootstrap-icons.woff?2820a3852bdb9a5832199cc61cec4e65") format("woff");
 .bi-gender-trans::before { content: "\f644"; }
 .bi-headset-vr::before { content: "\f645"; }
 .bi-info-lg::before { content: "\f646"; }
-.bi-mas**TODO**n::before { content: "\f647"; }
+.bi-mastodon::before { content: "\f647"; }
 .bi-messenger::before { content: "\f648"; }
 .bi-piggy-bank-fill::before { content: "\f649"; }
 .bi-piggy-bank::before { content: "\f64a"; }

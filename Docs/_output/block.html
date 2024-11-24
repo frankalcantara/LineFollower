@@ -149,6 +149,18 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Control Layer Implementation</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./testing_guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Line Following Robot Test Guide</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -171,20 +183,20 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#motorsdrivers" id="toc-motorsdrivers" class="nav-link" data-scroll-target="#motorsdrivers"><span class="header-section-number">3.2.2</span> MotorsDrivers</a></li>
   <li><a href="#peripherals" id="toc-peripherals" class="nav-link" data-scroll-target="#peripherals"><span class="header-section-number">3.2.3</span> Peripherals</a></li>
   </ul></li>
-  <li><a href="#control-layer" id="toc-control-layer" class="nav-link" data-scroll-target="#control-layer"><span class="header-section-number">3.3</span> Control Layer</a>
+  <li><a href="#control-layer" id="toc-control-layer" class="nav-link" data-scroll-target="#control-layer"><span class="header-section-number">3.3</span> Control Layer</a></li>
+  <li><a href="#coursemarkers" id="toc-coursemarkers" class="nav-link" data-scroll-target="#coursemarkers"><span class="header-section-number">4</span> CourseMarkers</a>
   <ul class="collapse">
-  <li><a href="#coursemarkers" id="toc-coursemarkers" class="nav-link" data-scroll-target="#coursemarkers"><span class="header-section-number">3.3.1</span> CourseMarkers</a></li>
-  <li><a href="#profilemanager" id="toc-profilemanager" class="nav-link" data-scroll-target="#profilemanager"><span class="header-section-number">3.3.2</span> ProfileManager</a></li>
+  <li><a href="#profilemanager" id="toc-profilemanager" class="nav-link" data-scroll-target="#profilemanager"><span class="header-section-number">4.0.1</span> ProfileManager</a></li>
+  <li><a href="#debug-layer" id="toc-debug-layer" class="nav-link" data-scroll-target="#debug-layer"><span class="header-section-number">4.1</span> Debug Layer</a>
+  <ul class="collapse">
+  <li><a href="#logger" id="toc-logger" class="nav-link" data-scroll-target="#logger"><span class="header-section-number">4.1.1</span> Logger</a></li>
+  <li><a href="#flashmanager" id="toc-flashmanager" class="nav-link" data-scroll-target="#flashmanager"><span class="header-section-number">4.1.2</span> FlashManager</a></li>
+  <li><a href="#flashreader" id="toc-flashreader" class="nav-link" data-scroll-target="#flashreader"><span class="header-section-number">4.1.3</span> FlashReader</a></li>
   </ul></li>
-  <li><a href="#debug-layer" id="toc-debug-layer" class="nav-link" data-scroll-target="#debug-layer"><span class="header-section-number">3.4</span> Debug Layer</a>
+  <li><a href="#main-control" id="toc-main-control" class="nav-link" data-scroll-target="#main-control"><span class="header-section-number">4.2</span> Main Control</a>
   <ul class="collapse">
-  <li><a href="#logger" id="toc-logger" class="nav-link" data-scroll-target="#logger"><span class="header-section-number">3.4.1</span> Logger</a></li>
-  <li><a href="#flashmanager" id="toc-flashmanager" class="nav-link" data-scroll-target="#flashmanager"><span class="header-section-number">3.4.2</span> FlashManager</a></li>
-  <li><a href="#flashreader" id="toc-flashreader" class="nav-link" data-scroll-target="#flashreader"><span class="header-section-number">3.4.3</span> FlashReader</a></li>
+  <li><a href="#main.cpp" id="toc-main.cpp" class="nav-link" data-scroll-target="#main.cpp"><span class="header-section-number">4.2.1</span> main.cpp</a></li>
   </ul></li>
-  <li><a href="#main-control" id="toc-main-control" class="nav-link" data-scroll-target="#main-control"><span class="header-section-number">3.5</span> Main Control</a>
-  <ul class="collapse">
-  <li><a href="#main.cpp" id="toc-main.cpp" class="nav-link" data-scroll-target="#main.cpp"><span class="header-section-number">3.5.1</span> main.cpp</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/block.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -251,37 +263,37 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="control-layer" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="control-layer"><span class="header-section-number">3.3</span> Control Layer</h2>
-<section id="coursemarkers" class="level3" data-number="3.3.1">
-<h3 data-number="3.3.1" class="anchored" data-anchor-id="coursemarkers"><span class="header-section-number">3.3.1</span> CourseMarkers</h3>
-<p>Processes track markers using a state machine approach to detect different patterns (finish line, speed mode changes, intersections). Its sophisticated detection system can differentiate between various marker combinations while maintaining reliable operation under varying light conditions.</p>
 </section>
-<section id="profilemanager" class="level3" data-number="3.3.2">
-<h3 data-number="3.3.2" class="anchored" data-anchor-id="profilemanager"><span class="header-section-number">3.3.2</span> ProfileManager</h3>
+<section id="coursemarkers" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> CourseMarkers</h1>
+<p>The CourseMarkers class manages track feature detection and the robot’s behaviour responses. A key innovation is its time-controlled marker detection system, using a fixed interval (<code>MARKER_READ_INTERVAL</code>) to optimize sensor readings. The class implements an efficient state machine that processes four distinct states (<code>0-3</code>) representing different marker combinations. Its detection system includes timing controls to ensure reliable operation while minimizing processing overhead.</p>
+<section id="profilemanager" class="level3" data-number="4.0.1">
+<h3 data-number="4.0.1" class="anchored" data-anchor-id="profilemanager"><span class="header-section-number">4.0.1</span> ProfileManager</h3>
 <p>Manages different operation profiles (analysis and speed modes). The key innovation here is its transparent speed value translation system, which allows the same base code to operate under different performance parameters without modification.</p>
 </section>
-</section>
-<section id="debug-layer" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="debug-layer"><span class="header-section-number">3.4</span> Debug Layer</h2>
-<section id="logger" class="level3" data-number="3.4.1">
-<h3 data-number="3.4.1" class="anchored" data-anchor-id="logger"><span class="header-section-number">3.4.1</span> Logger</h3>
+<section id="debug-layer" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="debug-layer"><span class="header-section-number">4.1</span> Debug Layer</h2>
+<section id="logger" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="logger"><span class="header-section-number">4.1.1</span> Logger</h3>
 <p>Implements a sophisticated logging system using circular buffers to maintain performance. A key feature is its ability to write to flash memory only during straight-line sections, ensuring logging doesn’t interfere with critical control operations.</p>
 </section>
-<section id="flashmanager" class="level3" data-number="3.4.2">
-<h3 data-number="3.4.2" class="anchored" data-anchor-id="flashmanager"><span class="header-section-number">3.4.2</span> FlashManager</h3>
+<section id="flashmanager" class="level3" data-number="4.1.2">
+<h3 data-number="4.1.2" class="anchored" data-anchor-id="flashmanager"><span class="header-section-number">4.1.2</span> FlashManager</h3>
 <p>Handles flash memory operations with built-in error checking and recovery mechanisms. Notable is its page-aligned writing system that maximizes flash memory lifespan while ensuring data integrity.</p>
 </section>
-<section id="flashreader" class="level3" data-number="3.4.3">
-<h3 data-number="3.4.3" class="anchored" data-anchor-id="flashreader"><span class="header-section-number">3.4.3</span> FlashReader</h3>
+<section id="flashreader" class="level3" data-number="4.1.3">
+<h3 data-number="4.1.3" class="anchored" data-anchor-id="flashreader"><span class="header-section-number">4.1.3</span> FlashReader</h3>
 <p>Manages data retrieval through a structured protocol, including checksums for data validation. The module implements a multi-marker system to ensure reliable data transmission even under noisy serial connections.</p>
 </section>
 </section>
-<section id="main-control" class="level2" data-number="3.5">
-<h2 data-number="3.5" class="anchored" data-anchor-id="main-control"><span class="header-section-number">3.5</span> Main Control</h2>
-<section id="main.cpp" class="level3" data-number="3.5.1">
-<h3 data-number="3.5.1" class="anchored" data-anchor-id="main.cpp"><span class="header-section-number">3.5.1</span> main.cpp</h3>
+<section id="main-control" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="main-control"><span class="header-section-number">4.2</span> Main Control</h2>
+<section id="main.cpp" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="main.cpp"><span class="header-section-number">4.2.1</span> main.cpp</h3>
 <p>The core control loop implementing PID-based line following. A significant feature is its non-blocking setup sequence that maintains system responsiveness during initialization and calibration. The module seamlessly integrates debug features when compiled with DEBUG_LEVEL &gt; 0 while maintaining optimal performance in normal operation.</p>
 
 
+</section>
 </section>
 </section>
 
@@ -613,7 +625,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // **TODO** in 1.5, we should make sure this works without a callout special case
+      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

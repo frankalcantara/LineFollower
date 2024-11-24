@@ -1,173 +1,173 @@
-# Line Following Robot Test Guide
+# Testing Guide
 
-## Introduction
+## RobotZero - Arduino Nano - 2024
 
 This document describes five independent test programs designed to verify the proper functioning of different components in your line following robot. Each test is a separate project that must be uploaded individually to your Arduino Nano. This modular approach allows for focused testing of each component without interference from other systems.
 
 IMPORTANT: Do not attempt to combine these tests into a single program. Each test should be uploaded separately to ensure accurate results.
 
-## Test Programs
+### Test Programs
 
-### 1. Line Sensors Test
+#### 1. Line Sensors Test
 
 **Purpose**: Verify the proper functioning of the line sensors array.
 
 **Setup**:
-1. Upload the `line-sensor-test` program to your Arduino Nano
-2. Open Serial Monitor (9600 baud)
-3. Place your robot on a test surface with your line
+1. Upload the `line-sensor-test` program to your Arduino Nano;
+2. Open Serial Monitor (9600 baud);
+3. Place your robot on a test surface with your line.
 
 **Test Procedure**:
-1. Move the robot slowly across the line
-2. The LED will blink briefly each time a sensor transitions from low to high
-3. The Serial Monitor will display which sensor detected the transition and its reading
-4. Test each sensor by ensuring the line crosses all sensors
+1. Move the robot slowly across the line;
+2. The LED will blink briefly each time a sensor transitions from low to high;
+3. The Serial Monitor will display which sensor detected the transition and its reading;
+4. Test each sensor by ensuring the line crosses all sensors.
 
 **Expected Results**:
-- LED should blink when sensors cross the line
-- Serial Monitor should show sensor readings
-- All sensors should detect the line when crossed
-- Readings should change significantly between line and surface
+- LED should blink when sensors cross the line;
+- Serial Monitor should show sensor readings;
+- All sensors should detect the line when crossed;
+- Readings should change significantly between line and surface.
 
 **Troubleshooting**:
-- If a sensor never triggers, check its connections
-- If readings are inconsistent, check sensor height from surface
-- If LED doesn't blink, verify LED pin connection
-- If no serial output, check baud rate settings
+- If a sensor never triggers, check its connections;
+- If readings are inconsistent, check sensor height from surface;
+- If LED doesn't blink, verify LED pin connection;
+- If no serial output, check baud rate settings.
 
-### 2. Marker Sensors Test
+#### 2. Marker Sensors Test
 
 **Purpose**: Verify the proper functioning of the course marker sensors.
 
 **Setup**:
-1. Upload the `marker-sensor-test` program
-2. Open Serial Monitor (9600 baud)
-3. Prepare test markers (either actual course markers or test material)
+1. Upload the `marker-sensor-test` program;
+2. Open Serial Monitor (9600 baud);
+3. Prepare test markers (either actual course markers or test material).
 
 **Test Procedure**:
-1. Move the robot over each marker
-2. Observe LED behaviour and Serial Monitor output
-3. Test both left and right marker sensors
-4. Try different marker positions and angles
+1. Move the robot over each marker;
+2. Observe LED behaviour and Serial Monitor output;
+3. Test both left and right marker sensors;
+4. Try different marker positions and angles.
 
 **Expected Results**:
-- LED should blink when marker is detected
-- Serial Monitor should show which sensor detected the marker
-- Both left and right sensors should work independently
-- Readings should be consistent for similar marker positions
+- LED should blink when marker is detected;
+- Serial Monitor should show which sensor detected the marker;
+- Both left and right sensors should work independently;
+- Readings should be consistent for similar marker positions.
 
-**Troubleshooting**:
-- If markers aren't detected, adjust MARKER_THRESHOLD value
-- Check sensor height if detection is inconsistent
-- Verify sensor connections if one side isn't working
-- Test with different marker materials if detection is poor
+**Troubleshooting**:`
+- If markers aren't detected, adjust `MARKER_THRESHOLD value;
+- Check sensor height if detection is inconsistent;
+- Verify sensor connections if one side isn't working;
+- Test with different marker materials if detection is poor.
 
-### 3. Motors Test
+#### 3. Motors Test
 
 **Purpose**: Verify proper motor function and movement patterns.
 
 **Setup**:
-1. Upload the `motor-test` program
-2. Place robot on elevated surface or testing stand
-3. Ensure adequate space for movement
-4. Keep USB cable clear of wheels
+1. Upload the `motor-test` program;
+2. Place robot on elevated surface or testing stand;
+3. Ensure adequate space for movement;
+4. Keep USB cable clear of wheels.
 
 **Test Procedure**:
 The robot will automatically perform this sequence:
-1. Move forward
-2. Stop
-3. Turn right
-4. Stop
-5. Turn left
-6. Stop
-7. Complete full turn
-8. Stop
-9. Move backward
-10. Stop
-11. Led blinking for 5 seconds
+1. Move forward.
+2. Stop.
+3. Turn right.
+4. Stop.
+5. Turn left.
+6. Stop.
+7. Complete full turn.
+8. Stop.
+9. Move backward.
+10. Stop.
+11. Led blinking for 5 seconds.
 12. Maximum speed running in straight line for 3s.
 13. Stop.
 
 **Expected Results**:
-- Motors should run smoothly in all directions
-- Robot should stop completely between movements
-- Turns should be consistent
-- Motor speed should be steady
+- Motors should run smoothly in all directions;
+- Robot should stop completely between movements;
+- Turns should be consistent;
+- Motor speed should be steady.
 
 **Troubleshooting**:
-- If motors don't turn, check connections
-- For uneven movement, verify wheel attachment
-- If speed seems wrong, adjust MOTOR_SPEED constant
-- For erratic behaviour, check battery voltage
+- If motors don't turn, check connections;
+- For uneven movement, verify wheel attachment;
+- If speed seems wrong, adjust MOTOR_SPEED constant;
+- For erratic behaviour, check battery voltage.
 
-### 4. Button and LED Test
+#### 4. Button and LED Test
 
 **Purpose**: Verify button operation and LED signalling.
 
 **Setup**:
-1. Upload the `button-led-test` program
-2. Open Serial Monitor (9600 baud)
+1. Upload the `button-led-test` program.
+2. Open Serial Monitor (9600 baud).
 
 **Test Procedure**:
 1. Press button to cycle through LED modes:
-   - Mode 0: LED off
-   - Mode 1: LED constantly on
-   - Mode 2: Slow blink (1 Hz)
-   - Mode 3: Fast blink (5 Hz)
-2. Test multiple button presses
-3. Observe LED behaviour in each mode
+   - Mode 0: LED off;
+   - Mode 1: LED constantly on;
+   - Mode 2: Slow blink (1 Hz);
+   - Mode 3: Fast blink (5 Hz).
+2. Test multiple button presses.
+3. Observe LED behaviour in each mode.
 
 **Expected Results**:
-- Button should register each press cleanly
-- LED should change modes with each press
-- Serial Monitor should show mode changes
-- LED patterns should be clear and consistent
+- Button should register each press cleanly;
+- LED should change modes with each press;
+- Serial Monitor should show mode changes;
+- LED patterns should be clear and consistent.
 
 **Troubleshooting**:
-- If button seems unresponsive, check debounce timing
-- For LED issues, verify PIN_STATUS_LED connection
-- If modes skip, adjust DEBOUNCE_DELAY
-- Check button wiring if no response
+- If button seems unresponsive, check debounce timing;
+- For LED issues, verify PIN_STATUS_LED connection;
+- If modes skip, adjust DEBOUNCE_DELAY;
+- Check button wiring if no response.
 
-### 5. Line Sensor Calibration Test
+#### 5. Line Sensor Calibration Test
 
 **Purpose**: Calibrate line sensors and establish proper thresholds.
 
 **Setup**:
-1. Upload the `line-calibration-test` program
-2. Open Serial Monitor (9600 baud)
-3. Prepare test surface with line
+1. Upload the `line-calibration-test` program.
+2. Open Serial Monitor (9600 baud).
+3. Prepare test surface with line.
 
 **Test Procedure**:
-1. Place robot on testing surface
-2. Press button to start calibration
+1. Place robot on testing surface.
+2. Press button to start calibration.
 3. During the 3-second calibration period:
-   - Move robot over the line multiple times
-   - Cover all sensors
-   - Move at different angles
-4. Observe final calibration values
+   - Move robot over the line multiple times;
+   - Cover all sensors;
+   - Move at different angles.
+4. Observe final calibration values.
 
 **Expected Results**:
-- LED blinks rapidly during calibration
-- Serial Monitor shows min/max values for each sensor
-- Clear difference between line and surface readings
-- Consistent readings across all sensors
+- LED blinks rapidly during calibration.
+- Serial Monitor shows min/max values for each sensor.
+- Clear difference between line and surface readings.
+- Consistent readings across all sensors.
 
 **Troubleshooting**:
-- If ranges are too narrow, check sensor height
-- For inconsistent readings, clean sensors
-- If calibration fails, adjust CALIBRATION_TIME
-- Verify surface and line contrast if readings are close
+- If ranges are too narrow, check sensor height.
+- For inconsistent readings, clean sensors.
+- If calibration fails, adjust `CALIBRATION_TIME`.
+- Verify surface and line contrast if readings are close.
 
-## General Tips
+### General Tips
 
-1. Always check battery voltage before testing
-2. Clean sensors before beginning tests
-3. Use a well-lit testing area
-4. Keep test surface clean and free of debris
-5. Document unusual readings for future reference
-6. Test one component at a time
-7. Verify USB connection if Serial Monitor shows no data
+1. Always check battery voltage before testing.
+2. Clean sensors before beginning tests.
+3. Use a well-lit testing area.
+4. Keep test surface clean and free of debris.
+5. Document unusual readings for future reference.
+6. Test one component at a time.
+7. Verify USB connection if Serial Monitor shows no data.
 
 
 **These tests should be performed in sequence when building a new robot or after any major modifications**. Keep a log of typical values and behaviors for your specific robot - this will help identify issues in the future.
