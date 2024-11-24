@@ -1,24 +1,27 @@
 # Control Layer Implementation
 
-The Control Layer forms the decision-making core of RobotZero, managing the robot's behaviour in response to sensor inputs and track conditions. This layer translates raw sensor data into actionable controls, implementing the robot's core line-following logic while managing special track features like markers and intersections. Operating between the Hardware Interface Layer and the Main Control system, it ensures smooth and predictable robot behaviour under varying conditions.
+**The Control Layer forms the decision-making core of RobotZero**, managing the robot's behaviour in response to sensor inputs and track conditions. This layer translates raw sensor data into actionable controls, implementing the robot's core line-following logic while managing special track features like markers and intersections. Operating between the Hardware Interface Layer and the Main Control system, it ensures smooth and predictable robot behaviour under varying conditions.
 
->**TODO**: This version of CourseMarkers has not been run yet. At this stage of development (Dec/2024), this code is purely theoretical and REQUIRES EXTENSIVE TESTING. This implementation represents our current design approach but has not been validated in real-world conditions.
+> **TODO**: This version of CourseMarkers has not been run yet. At this stage of development (Dec/2024), this code is purely theoretical and REQUIRES EXTENSIVE TESTING. This implementation represents our current design approach but has not been validated in real-world conditions.
 
 The `CourseMarkers` class represents the primary control component, implementing track feature detection and corresponding behaviour adjustments. This class processes marker sensor data to identify track features and manages the robot's response to these features, including speed changes, lap counting, and precision mode transitions. Through its state machine implementation, it ensures reliable detection of track features and smooth transitions between different operating modes.
 
 The `ProfileManager` class complements the control system by managing operation profiles and parameters based on the current debug level. When `DEBUG_LEVEL` is greater than `0`, it provides different speed and control parameter sets optimized for either analysis (`DEBUG_LEVEL = 1`) or high-speed performance (`DEBUG_LEVEL = 2`). This class enables the robot to maintain consistent control logic while operating under different performance requirements, making it an essential component for both development and competition scenarios.
 
-## CourseMarkers Implementation (CourseMakers.h / CourseMakers.cpp)
+# CourseMarkers Implementation
 
-The CourseMarkers class manages track feature detection and robot behaviour through an optimized state-based approach:
+The `CourseMarkers` class represents a control component implementing track feature detection and robot behaviour management through an optimized state-based approach. This implementation focuses on efficient timing control, reliable marker detection, and seamless integration with both the debug system and main control loop.
 
-```cpp
+## Core Architecture
+
+``` cpp
 class CourseMarkers {
 private:
     // Timing control
     static uint32_t lastReadTime;
+    static const uint16_t MARKER_READ_INTERVAL = 2;  // 2ms read interval
     
-    // State variables
+    // State tracking
     static int speed;
     static int lastMarkerState;
     static int previousMarkerState;
@@ -27,107 +30,43 @@ private:
     static int16_t leftMarkerDetected;   
     static int16_t rightMarkerDetected;  
 
-    // Speed control variables
+    // Motion control
     static bool isTurning;
     static bool isExitingTurn;
     static uint8_t boostCountdown;
 
-    // Timers for precise control
+    // Timing control
     static Timer stopTimer;
     static Timer slowdownTimer;
 };
 ```
 
-A key innovation in the marker detection system is its time-controlled operation:
+The implementation utilizes a set of static members to maintain system state while minimizing memory usage. Key innovations include:
 
-```cpp
-void CourseMarkers::readCourseMarkers() {
-    // Time-controlled reading
-    uint32_t currentTime = millis();
-    if (currentTime - lastReadTime < MARKER_READ_INTERVAL) {
-        return;
-    }
-    lastReadTime = currentTime;
+1.  **Time-Controlled Operation**: The system implements a precise timing mechanism that regulates marker reading frequency:
 
-    // Optimized marker reading with direct state calculation
-    bool leftDetected = analogRead(PIN_MARKER_LEFT) <= MARKER_DETECTION_THRESHOLD;
-    bool rightDetected = analogRead(PIN_MARKER_RIGHT) <= MARKER_DETECTION_THRESHOLD;
-    currentMarkerState = (leftDetected << 1) | rightDetected;
-
-    // LED feedback only when needed
-    digitalWrite(PIN_STATUS_LED, leftDetected || rightDetected);
-}
-```
-
-The speed control system implements an optimized decision tree for quick response:
-
-```cpp
-int CourseMarkers::speedControl(int error) {
-    // Early curve detection
-    bool curve_detected = abs(error) > TURN_THRESHOLD;
-    if (curve_detected) {
-        isTurning = true;
-        isExitingTurn = false;
-        return TURN_SPEED;
-    }
-
-    bool straight_detected = abs(error) < STRAIGHT_THRESHOLD;
-    int target_speed;
-
-    if (straight_detected) {
-        if (isTurning) {
-            isExitingTurn = true;
-            boostCountdown = BOOST_DURATION;
+    ``` cpp
+    void readCourseMarkers() {
+        uint32_t currentTime = millis();
+        if (currentTime - lastReadTime < MARKER_READ_INTERVAL) {
+            return;
         }
-        isTurning = false;
-        target_speed = isPrecisionMode ? SPEED_SLOW : BASE_FAST;
+        lastReadTime = currentTime;
+
+        // Optimized marker reading
+        bool leftDetected = analogRead(PIN_MARKER_LEFT) <= MARKER_DETECTION_THRESHOLD;
+        bool rightDetected = analogRead(PIN_MARKER_RIGHT) <= MARKER_DETECTION_THRESHOLD;
+        currentMarkerState = (leftDetected << 1) | rightDetected;
+
+        digitalWrite(PIN_STATUS_LED, leftDetected || rightDetected);
     }
-    else {
-        target_speed = map(abs(error),
-            STRAIGHT_THRESHOLD,
-            TURN_THRESHOLD,
-            (isPrecisionMode ? SPEED_SLOW : BASE_FAST),
-            TURN_SPEED);
-    }
+    ```
 
-    // Optimized speed adjustment
-    if (isExitingTurn && boostCountdown > 0 && !isPrecisionMode) {
-        target_speed = min(255, target_speed + BOOST_INCREMENT);
-        boostCountdown--;
-    }
+    This time-controlled approach ensures consistent sampling intervals while preventing unnecessary processor load. The 2ms interval was chosen based on empirical testing to balance between reliable detection and system performance.
 
-    int step = (target_speed > currentSpeed) ? ACCELERATION_STEP : BRAKE_STEP;
-    if (abs(target_speed - currentSpeed) <= step) {
-        currentSpeed = target_speed;
-    }
-    else {
-        currentSpeed += (target_speed > currentSpeed) ? step : -step;
-    }
+2.  **State Machine Implementation**: The system maintains a three-level state history (current, previous, and old) enabling  pattern recognition:
 
-    return constrain(currentSpeed, TURN_SPEED, 
-                    (isPrecisionMode ? SPEED_SLOW : BASE_FAST));
-}
-```
-
-The marker processing system uses an efficient state machine with four states:
-
-- State 0: No markers detected
-- State 1: Left marker only
-- State 2: Right marker only
-- State 3: Both markers detected
-
-The state machine implementation processes changes only when necessary:
-
-```cpp
-void CourseMarkers::processMarkerSignals() {
-    readCourseMarkers();
-
-    // Only process on state changes
-    if (lastMarkerState == currentMarkerState) {
-        return;
-    }
-
-    // State machine for marker processing
+    ``` cpp
     switch (currentMarkerState) {
     case 0: // No markers
         if (lastMarkerState == 2 && previousMarkerState == 0) {
@@ -142,13 +81,152 @@ void CourseMarkers::processMarkerSignals() {
         }
         break;
     }
-    
-    // Update state history
-    oldMarkerState = previousMarkerState;
-    previousMarkerState = lastMarkerState;
-    lastMarkerState = currentMarkerState;
+    ```
+
+The state machine processes four distinct states: - State 0: No markers detected; - State 1: Left marker only; - State 2: Right marker only; - State 3: Both markers detected.
+
+3.  **Speed Control System**: Implements an optimized decision tree for rapid response:
+
+    ``` cpp
+    int CourseMarkers::speedControl(int error) {
+        // Early curve detection
+        bool curve_detected = abs(error) > TURN_THRESHOLD;
+        if (curve_detected) {
+            isTurning = true;
+            isExitingTurn = false;
+            return TURN_SPEED;
+        }
+
+        bool straight_detected = abs(error) < STRAIGHT_THRESHOLD;
+        int target_speed;
+
+        if (straight_detected) {
+            if (isTurning) {
+                isExitingTurn = true;
+                boostCountdown = BOOST_DURATION;
+            }
+            isTurning = false;
+            target_speed = isPrecisionMode ? SPEED_SLOW : BASE_FAST;
+        }
+        else {
+            target_speed = map(abs(error),
+                STRAIGHT_THRESHOLD,
+                TURN_THRESHOLD,
+                (isPrecisionMode ? SPEED_SLOW : BASE_FAST),
+                TURN_SPEED);
+        }
+
+        // Boost control
+        if (isExitingTurn && boostCountdown > 0 && !isPrecisionMode) {
+            target_speed = min(255, target_speed + BOOST_INCREMENT);
+            boostCountdown--;
+        }
+
+        // Speed adjustment
+        int step = (target_speed > currentSpeed) ? ACCELERATION_STEP : BRAKE_STEP;
+        if (abs(target_speed - currentSpeed) <= step) {
+            currentSpeed = target_speed;
+        }
+        else {
+            currentSpeed += (target_speed > currentSpeed) ? step : -step;
+        }
+
+        return constrain(currentSpeed, TURN_SPEED, 
+                        (isPrecisionMode ? SPEED_SLOW : BASE_FAST));
+    }
+    ```
+
+4.  **Debug Integration**: When `DEBUG_LEVEL > 0`, the system integrates with the logging framework:
+
+    ``` cpp
+    void handleFinishLine() {
+        lapCount++;
+        if (lapCount == 2 && !isStopSequenceActive) {
+            isStopSequenceActive = true;
+            slowdownTimer.Start(50);
+            stopTimer.Start(STOP_DELAY);
+    #if DEBUG_LEVEL > 0
+            FlashManager::setLogReady();
+    #endif
+        }
+    }
+    ```
+
+5.  **Event Handling**: The system implements specialized handlers for different track features:
+
+    -   `handleFinishLine()`: Manages lap counting and stop sequence;
+    -   `handleSpeedMode()`: Controls precision/speed mode transitions;
+    -   `handleIntersection()`: Logs intersection detection.
+
+### State Management
+
+The state management system operates through a decision tree (Figure 1), processing marker states in the `processMarkerSignals` method. The decision process begins with a read operation that captures the current state of both markers, encoding them into a single value through binary manipulation: the right marker contributes the least significant bit (1), while the left marker sets the second bit (2), resulting in four possible states (0: no markers, 1: left only, 2: right only, 3: both markers).
+
+![Course Markers, decision tree diagram.](images/DecisonTree.drawio.png){fig-align="center"}
+
+Before entering the main decision logic, the system performs a critical optimization check: if the current state matches the last state (`lastMarkerState == currentMarkerState`), the method returns immediately, preventing unnecessary processing cycles. This early-return mechanism significantly reduces CPU load during steady-state operation when no markers are being detected.
+
+Upon detecting a state change, the system enters its primary decision sequence. The root decision node examines the current state, with special emphasis on the 'no markers' state (0). When in state 0, the system traverses a carefully ordered sequence of pattern checks, each designed to identify specific track features through state history analysis. The sequence is deliberately ordered by priority: finish line detection takes precedence, followed by speed mode transitions, and finally intersection detection.
+
+The finish line check looks for a specific pattern: a right marker only (state 2) followed by no markers, with the previous state also being no markers (`lastMarkerState == 2 && previousMarkerState == 0`). This three-state sequence definitively identifies the finish line pattern while rejecting spurious signals. When detected, `handleFinishLine()` executes, incrementing the lap counter and potentially initiating the stopping sequence.
+
+If the finish line pattern isn't matched, the system checks for speed mode transitions by looking for a left marker only (state 1) followed by a history of no markers (`previousMarkerState == 0`). This pattern triggers a complete mode transition through `handleSpeedMode()`, which orchestrates a comprehensive state reset. The speed mode handler not only toggles between precision and normal operation but also ensures a clean transition by resetting all motion-related states:
+
+``` cpp
+void handleSpeedMode() {
+    isPrecisionMode = !isPrecisionMode;
+    currentSpeed = isPrecisionMode ? SPEED_SLOW : BASE_FAST;
+    isTurning = false;
+    isExitingTurn = false;
+    boostCountdown = 0;
 }
 ```
+
+The final check in the decision sequence examines whether any of the three previous states indicated both markers were detected (state 3). This more permissive check allows for intersection detection regardless of the exact sequence of marker readings, accommodating various approach angles and speeds. The handleIntersection() call logs the event but maintains current robot behaviour, as intersections don't require specific responses in the current implementation.
+
+After processing through the decision tree, the system executes its state history update, shifting each state one position in the history chain (`oldMarkerState = previousMarkerState; previousMarkerState = lastMarkerState; lastMarkerState = currentMarkerState`). This shift operation maintains the continuous state history required for pattern detection while minimizing memory usage through reuse of existing variables.
+
+The process concludes with a check of the stopping sequence flags. When active, the stop sequence implements a two-phase deceleration: first reducing speed to SPEED_BRAKE if the slowdown timer hasn't expired, then bringing the robot to a complete stop once the stop timer completes. This gradual stopping process ensures smooth deceleration while maintaining control throughout the stopping sequence.
+
+## Integration with Debug Layer
+
+When operating in debug mode (`DEBUG_LEVEL > 0`), the system provides comprehensive data collection:
+
+1.  Event Logging:
+
+    -   State transitions
+    -   Speed mode changes
+    -   Intersection detections
+    -   Finish line crossings
+
+2.  Performance Monitoring:
+
+    -   Speed adjustments
+    -   Turn detection
+    -   Boost activation
+
+3.  Stop Sequence Management:
+
+    ``` cpp
+    if (isStopSequenceActive && !isRobotStopped) {
+        if (!slowdownTimer.Expired() && currentSpeed > SPEED_BRAKE) {
+            currentSpeed = SPEED_BRAKE;
+        }
+        else if (stopTimer.Expired()) {
+            currentSpeed = 0;
+            MotorDriver::setMotorsPower(0, 0);
+            isRobotStopped = true;
+        }
+    }
+    ```
+
+## Timing Considerations
+
+The timing system implementation represents a critical aspect of RobotZero's control architecture, orchestrating multiple time-sensitive operations through carefully calibrated intervals. At its core, the marker detection system operates on a fixed 2ms sampling interval, implemented through a time-difference check at the start of each reading cycle. This precise timing ensures consistent marker detection while preventing excessive sensor polling that could impact system performance. The sampling rate was determined through empirical testing to balance between reliable detection and system overhead.
+
+When the robot initiates its stopping sequence, the system employs a two-phase timing approach. Initially, a 50ms slowdown period allows for controlled deceleration to `SPEED_BRAKE`, providing a smooth transition from full speed. After this initial brake phase, a longer STOP_DELAY interval guides the robot to a complete stop, preventing abrupt movements that could affect positioning accuracy. These timing values work in concert with the speed adjustment system, which uses \`ACCELERATION_STEP\` and \`BRAKE_STEP\` to control velocity changes. The step values create a gradual acceleration and deceleration profile, protecting the motors while maintaining precise control over the robot's movement.
+
+Post-curve speed management introduces another timing element through the boost system. When exiting a curve, the boostCountdown timer activates for a configurable duration (\`BOOST_DURATION\`), during which the robot can temporarily exceed its normal speed limits. This boost phase is carefully timed to maximize straight-line performance while ensuring the robot maintains stability as it transitions from curved to straight sections. The timing parameters across these systems are interdependent; for example, the marker reading interval must be fast enough to detect course features even at maximum boost speed, while the acceleration steps must be calibrated to work effectively within the boost duration window.
 
 ## ProfileManager Implementation
 
@@ -250,7 +328,7 @@ const SpeedProfile ProfileManager::SPEED_PROFILE = {
 };
 ```
 
-> **Implementation Note:**  
+> **Implementation Note:**\
 > **TODO**: These variables should be transferred to macros or constexpr's in the configuration layer, maintaining the system's design principles of compile-time optimization and centralized configuration.
 
 The translation between default values and profile-specific values is handled through the `getSpeedValue` method:

@@ -20,12 +20,12 @@ const layoutMarginEls = () => {
       const top = marginChild.getBoundingClientRect().top + window.scrollY;
       if (top < lastBottom) {
         const marginChildStyle = window.getComputedStyle(marginChild);
-        const marginBottom = parseFloat(marginChildStyle["marginBottom"]);
+        const marginBottom = parseFloat(marginChildStyle["marginBottom"];
         const margin = lastBottom - top + marginBottom;
         marginChild.style.marginTop = `${margin}px`;
       }
       const styles = window.getComputedStyle(marginChild);
-      const marginTop = parseFloat(styles["marginTop"]);
+      const marginTop = parseFloat(styles["marginTop"];
       lastBottom = top + marginChild.getBoundingClientRect().height + marginTop;
     }
   }
@@ -270,7 +270,7 @@ window.document.addEventListener("DOMContentLoaded", function (_event) {
             activateCategories(referrerListing);
           } else if (listingHrefs.length > 0) {
             // Otherwise, just fall back to the first listing
-            activateCategories(listingHrefs[0]);
+            activateCategories(listingHrefs[0];
           }
         }
       });
@@ -843,12 +843,12 @@ window.addEventListener("pageshow", (_event) => {
     for (const item of tabs) {
       const div = item.parentElement.parentElement.parentElement;
       const group = div.getAttribute("data-group");
-      if (!result[group]) {
+      if (!result[group] {
         result[group] = {};
       }
       const selectorsToSync = result[group];
       const value = item.innerHTML;
-      if (!selectorsToSync[value]) {
+      if (!selectorsToSync[value] {
         selectorsToSync[value] = [];
       }
       selectorsToSync[value].push(item);
@@ -858,12 +858,12 @@ window.addEventListener("pageshow", (_event) => {
 
   function setupSelectorSync() {
     const selectorsToSync = findSelectorsToSyncByLanguage();
-    Object.entries(selectorsToSync).forEach(([group, tabSetsByValue]) => {
-      Object.entries(tabSetsByValue).forEach(([value, items]) => {
+    Object.entries(selectorsToSync).forEach([group, tabSetsByValue] => {
+      Object.entries(tabSetsByValue).forEach([value, items] => {
         items.forEach((item) => {
           item.addEventListener("click", (_event) => {
             setTabState(group, value);
-            toggleAll(value, selectorsToSync[group]);
+            toggleAll(value, selectorsToSync[group];
           });
         });
       });

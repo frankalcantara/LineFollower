@@ -120,7 +120,7 @@ window.document.addEventListener("DOMContentLoaded", function (_event) {
       if (state.isOpen) {
         if (lastState && !lastState.isOpen) {
           setTimeout(() => {
-            positionPanel(quartoSearchOptions["panel-placement"]);
+            positionPanel(quartoSearchOptions["panel-placement"];
           }, 150);
         }
       }
@@ -147,7 +147,7 @@ window.document.addEventListener("DOMContentLoaded", function (_event) {
 
             const items = groupedItems.get(baseHref);
             if (!items) {
-              groupedItems.set(baseHref, [item]);
+              groupedItems.set(baseHref, [item];
             } else {
               // If the href for this item matches the document
               // exactly, place this item first as it is the item that represents
@@ -556,7 +556,7 @@ function deferredLoadPlugin(createPlugin) {
       if (plugin && plugin.getSources) {
         return plugin.getSources(obj);
       } else {
-        return Promise.resolve([]);
+        return Promise.resolve[];
       }
     },
     data: (obj) => {
@@ -621,7 +621,7 @@ function showCopyLink(query, options) {
       copyButtonEl = window.document.createElement("button");
       copyButtonEl.setAttribute("class", "aa-CopyButton");
       copyButtonEl.setAttribute("type", "button");
-      copyButtonEl.setAttribute("title", language["search-copy-link-title"]);
+      copyButtonEl.setAttribute("title", language["search-copy-link-title"];
       copyButtonEl.onmousedown = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -662,7 +662,7 @@ function showCopyLink(query, options) {
 
     // If there is a query, show the link icon
     if (copyButtonEl) {
-      if (lastQuery && options["copy-button"]) {
+      if (lastQuery && options["copy-button"] {
         copyButtonEl.style.display = "flex";
       } else {
         copyButtonEl.style.display = "none";
@@ -697,7 +697,7 @@ async function readSearchData() {
       shownWarning = true;
       return;
     }
-    const fuse = new window.Fuse([], kFuseIndexOptions);
+    const fuse = new window.Fuse[], kFuseIndexOptions);
 
     // fetch the main search.json
     const response = await fetch(offsetURL("search.json"));
@@ -967,7 +967,7 @@ function createErrorCard(createElement, title, text) {
   const errorEl = createElement("div", { class: "search-error" }, [
     titleEl,
     descEl,
-  ]);
+  ];
   return errorEl;
 }
 
@@ -1277,7 +1277,7 @@ async function fuseSearch(query, fuse, fuseOptions) {
   // and create a subfuse to use for subsequent queries
   if (now - then > kFuseMaxWait && subSearchFuse === undefined) {
     subSearchTerm = query;
-    subSearchFuse = new window.Fuse([], kFuseIndexOptions);
+    subSearchFuse = new window.Fuse[], kFuseIndexOptions);
     resultsRaw.forEach((rr) => {
       subSearchFuse.add(rr.item);
     });

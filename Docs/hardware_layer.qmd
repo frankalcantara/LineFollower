@@ -6,7 +6,7 @@ The `MotorDrivers` class implements a dual H-bridge motor control system, suppor
 
 The `Sensors` class manages a six-sensor array for line detection, implementing both calibration and position calculation algorithms. During calibration, it samples each sensor `400` times with `30ms` intervals, establishing minimum and maximum values that account for varying surface conditions and ambient lighting. The line position calculation uses weighted sensor values to determine the robot's position relative to the line, with outer sensors having greater influence to enhance curve detection and stability.
 
-The `Peripherals` class handles auxiliary hardware components, particularly the start button with sophisticated debounce logic and status LED control. In debug mode, it also manages communication protocols for data retrieval. The button management implements a state machine with five states (`WAITING_PRESS`, `DEBOUNCING_PRESS`, `WAITING_RELEASE`, `DEBOUNCING_RELEASE`, `BUTTON_HANDLED`) to ensure reliable button operation even under competition conditions.
+The `Peripherals` class handles auxiliary hardware components, particularly the start button with  debounce logic and status LED control. In debug mode, it also manages communication protocols for data retrieval. The button management implements a state machine with five states (`WAITING_PRESS`, `DEBOUNCING_PRESS`, `WAITING_RELEASE`, `DEBOUNCING_RELEASE`, `BUTTON_HANDLED`) to ensure reliable button operation even under competition conditions.
 
 ## MotorDrivers Implementation (MotorsDrivers.h / MotorsDrivers.cpp)
 
@@ -165,8 +165,8 @@ void Sensors::calibration() {
 
            // Update min and max values
            for (uint8_t i = 0; i < NUM_SENSORES; i++) {
-               if (v_s[i] < sensorMin[i]) sensorMin[i] = v_s[i];
-               if (v_s[i] > sensorMax[i]) sensorMax[i] = v_s[i];
+               if (v_s[i] < sensorMin[i] sensorMin[i] = v_s[i];
+               if (v_s[i] > sensorMax[i] sensorMax[i] = v_s[i];
            }
 
            calibrationCount++;
@@ -285,7 +285,7 @@ The class implements atomic operations when updating sensor values to prevent da
 
 ## Peripherals Implementation (Peripherals.h / Peripherals.cpp)
 
-The `Peripherals` class manages auxiliary hardware interactions, focusing primarily on button input handling and LED status indication. It implements a sophisticated state machine for button debouncing and, when in debug mode, manages data transmission protocols.
+The `Peripherals` class manages auxiliary hardware interactions, focusing primarily on button input handling and LED status indication. It implements a  state machine for button debouncing and, when in debug mode, manages data transmission protocols.
 
 ```cpp
 #ifndef PERIPHERALS_H

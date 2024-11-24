@@ -1,834 +1,228 @@
 # Debug Layer Implementation
 
-The Debug Layer implements a data collection and analysis system that activates when `DEBUG_LEVEL` is greater than `0`. This layer operates alongside the robot's core functionality without impacting performance, providing insights into the robot's behaviour and performance metrics.
+The Debug Layer implements a sophisticated data collection and analysis system that activates when `DEBUG_LEVEL` is greater than `0`. This layer operates alongside RobotZero's core functionality without impacting performance, providing deep insights into the robot's behaviour and performance metrics through careful memory management and efficient data structures.
 
-The layer consists of six key components:
+## Data Structures Implementation
 
-`DataStructures`: Defines the foundational data types and formats used throughout the debug system. It implements carefully sized structures for events (`8 bytes`), performance records (`12 bytes`), session headers (`32 bytes`), and lap statistics (`16 bytes`), each including checksums for data integrity.
-
-`Logger`: Acts as the primary interface for data collection, managing real-time data buffering and storage. It implements intelligent sampling strategies, collecting data more frequently during curves (`20ms intervals`) than straight lines (`50ms intervals`) to optimize memory usage while maintaining detailed performance records.
-
-`FlashManager`: Handles low-level flash memory operations, implementing page-aligned writes and atomic operations to ensure data integrity. It manages a dedicated section of flash memory starting at address `0x1000`, with careful consideration for write cycles and error recovery.
-
-`FlashReader`: Controls the data transmission protocol, implementing a robust communication system with start/end markers, section headers, and checksums. It manages the transmission of stored data when requested through the serial interface.
-
-`CircularBuffer`: Provides efficient temporary storage for data collection, implementing a templated circular buffer with atomic operations. This ensures no data loss during high-frequency sampling while managing memory constraints.
-
-`LedPattern`: Manages visual feedback during debug operations, implementing distinct patterns to indicate different operational states and data transmission status. It provides immediate visual feedback without requiring serial monitoring.
-
-### DataStructures Implementation (DataStructures.h)
-
-The `DataStructures` header defines the core data types and formats for RobotZero's debug system. Each structure is carefully designed for memory efficiency and data integrity while capturing comprehensive performance data.
-
-The debug modes are defined through an enumeration:
+The `DataStructures.h` header defines the core data types and formats used throughout RobotZero's debug system. Each structure is carefully designed for memory efficiency and data integrity while capturing comprehensive performance data:
 
 ```cpp
 enum class DebugMode : uint8_t {
-   NORMAL = 0,    // No debugging (should never be set in debug)
-   ANALYSIS = 1,  // Analysis mode with configurable speed
-   SPEED = 2      // High speed performance analysis
-};
-```
-
-The `SpeedProfile` structure unifies all motion and control parameters:
-
-```cpp
-struct SpeedProfile {
-   // Speed settings - Linear speed values for different conditions
-   uint8_t speedStop;      // Complete stop (always 0)
-   uint8_t speedStartup;   // Initial movement speed
-   uint8_t speedTurn;      // Speed during turns
-   uint8_t speedBrake;     // Speed during braking
-   uint8_t speedCruise;    // Normal operating speed
-   uint8_t speedSlow;      // Precision movement speed
-   uint8_t speedFast;      // High-speed straight line
-   uint8_t speedBoost;     // Post-curve acceleration
-   uint8_t speedMax;       // Maximum allowable speed
-
-   // Motion control parameters
-   uint8_t accelerationStep;    // Speed increase per cycle
-   uint8_t brakeStep;          // Speed decrease per cycle
-   uint8_t turnSpeed;          // Base turning speed
-   uint8_t turnThreshold;      // Error threshold for turn detection
-   uint8_t straightThreshold;  // Error threshold for straight line
-   uint8_t boostDuration;      // Post-curve boost duration
-   uint8_t boostIncrement;     // Extra speed during boost
-
-   // Line following control parameters
-   float kProportional;       // Position error gain
-   float kDerivative;         // Rate of change gain
-   float filterCoefficient;   // Error smoothing factor
-};
-```
-
-The system tracks discrete events through a carefully ordered enumeration:
-
-```cpp
-enum class EventType : uint8_t {
-   SESSION_START = 0x01,   // Beginning of debug session
-   LAP_START = 0x02,       // Start line detection
-   LAP_END = 0x03,         // Lap completion
-   CURVE_ENTER = 0x04,     // Curve detection start
-   CURVE_EXIT = 0x05,      // Return to straight line
-   MODE_CHANGE = 0x06,     // Operation mode switch
-   SPEED_CHANGE = 0x07,    // Velocity profile change
-   ERROR_DETECTED = 0x08,  // System error condition
-   SESSION_END = 0x09      // Debug session completion
-};
-```
-
-Four core structures handle data collection:
-
-```cpp
-struct PerformanceRecord {
-   uint32_t timestamp;     // Milliseconds since start
-   int16_t linePosition;   // Current line position (-100 to +100)
-   int16_t error;         // Position error from target
-   int16_t correction;    // Applied PID correction
-   uint8_t speedLeft;     // Left motor PWM value
-   uint8_t speedRight;    // Right motor PWM value
-   uint8_t state;         // Robot state flags
-   uint8_t checksum;      // Data integrity value
+    NORMAL = 0,    // No debugging (should never be set in debug)
+    ANALYSIS = 1,  // Analysis mode with configurable speed
+    SPEED = 2      // High speed performance analysis
 };
 
 struct EventRecord {
-   uint32_t timestamp;    // Milliseconds since start
-   EventType type;        // Event identifier
-   uint16_t data;        // Event-specific data
-   uint8_t checksum;     // Data integrity value
-};
+    uint32_t timestamp;    // Time since start
+    EventType type;        // Event type
+    uint16_t data;        // Event specific data
+    uint8_t checksum;     // Data validation
+}; // Total: 8 bytes
+
+struct PerformanceRecord {
+    uint32_t timestamp;     // Time since start
+    int16_t linePosition;   // Current line position
+    int16_t error;         // Current error
+    int16_t correction;    // Applied correction
+    uint8_t speedLeft;     // Left motor speed
+    uint8_t speedRight;    // Right motor speed
+    uint8_t state;         // Robot state flags
+    uint8_t checksum;      // Data validation
+}; // Total: 12 bytes
 
 struct SessionHeader {
-   uint32_t startTime;          // Session start timestamp
-   DebugMode mode;             // Current debug mode
-   uint8_t plannedLaps;        // Target lap count
-   uint8_t configuredSpeed;    // Base speed setting
-   float pidKp;                // Proportional gain
-   float pidKd;                // Derivative gain
-   float filterAlpha;          // Error filter coefficient
-   uint16_t sensorCalibrationData[6]; // Per-sensor calibration
-   uint32_t headerChecksum;    // Header integrity value
-};
-
-struct LapStats {
-   uint32_t startTime;      // Lap start timestamp
-   uint32_t duration;       // Lap completion time
-   uint16_t curves;         // Curves detected
-   uint16_t maxDeviation;   // Maximum line deviation
-   float avgDeviation;      // Average line deviation
-   uint8_t maxSpeed;        // Peak speed achieved
-   uint8_t checksum;        // Data integrity value
-};
+    uint32_t startTime;          // Session start timestamp
+    DebugMode mode;             // Operating mode
+    uint8_t plannedLaps;        // Number of laps to run
+    uint8_t configuredSpeed;    // Base speed setting
+    float pidKp;                // PID proportional constant
+    float pidKd;                // PID derivative constant
+    float filterAlpha;          // Error filter coefficient
+    uint16_t sensorCalibrationData[6]; // Calibration values
+    uint32_t headerChecksum;    // Header validation
+}; // Total: 32 bytes
 ```
 
-The `state` field in `PerformanceRecord` uses bit flags to encode multiple conditions:
+Each structure uses specific bit fields for efficient state encoding. For example, the `state` field in `PerformanceRecord` encodes multiple conditions:
+- `Bit 0`: Precision mode active
+- `Bit 1`: Turn detection active
+- `Bits 2-7`: Reserved for future expansion
 
-- Bit `0`: Precision mode active;
-- Bit `1`: In curve detection;
-- Bits `2-7`: Reserved for future use.
+## Circular Buffer Implementation
 
-Each checksum is calculated by adding all preceding bytes in the structure, providing basic data corruption detection. The structures are sized to optimize flash memory operations:
-
-- `PerformanceRecord`: `12 bytes`, frequent updates;
-- `EventRecord`: `8 bytes`, state changes only;
-- `SessionHeader`: `32 bytes`, once per session;
-- `LapStats`: `16 bytes`, once per lap.
-
-This careful sizing ensures efficient memory usage while maintaining data integrity through aligned access patterns. The entire system is conditionally compiled using `#if DEBUG_LEVEL > 0`, ensuring zero overhead in production builds.
-
-### CircularBuffer Implementation (CircularBuffer.h)
-
-The `CircularBuffer` class implements a highly efficient, template-based ring buffer designed specifically for the debug system. This buffer provides atomic operations for data storage and retrieval.
-
-Here's the core template definition:
+The `CircularBuffer` template class provides efficient temporary storage with atomic operations:
 
 ```cpp
-#ifndef CIRCULARBUFFER_H
-#define CIRCULARBUFFER_H
-
-#include <Arduino.h>
-
-#if DEBUG_LEVEL > 0
-
 template<typename T, uint8_t SIZE>
 class CircularBuffer {
-private:
-   T buffer[SIZE];    // Static storage array
-   uint8_t head;      // Write index
-   uint8_t tail;      // Read index
-   uint8_t count;     // Number of items
-
-public:
-   CircularBuffer() : head(0), tail(0), count(0) {}
-
-   // Core buffer operations
-   bool push(const T& item);
-   bool pop(T& item);
-   bool peek(T& item) const;
-   bool at(uint8_t index, T& item) const;
-   void clear();
-
-   // Status queries
-   uint8_t getCount() const;
-   static constexpr uint8_t getCapacity();
-   bool isEmpty() const;
-   bool isFull() const;
-   uint8_t getFreeSpace() const;
-
-   // Batch operations
-   uint8_t pushMultiple(const T* items, uint8_t numItems);
-   uint8_t popMultiple(T* items, uint8_t maxItems);
-
-   // Direct access methods
-   uint8_t getContinuousReadSize() const;
-   uint8_t getContinuousWriteSize() const;
-   T* getWritePtr();
-   const T* getReadPtr() const;
+    T buffer[SIZE];       // Static storage array
+    uint8_t head;         // Write index
+    uint8_t tail;         // Read index
+    uint8_t count;        // Number of items
+    
+    bool push(const T& item) {
+        if (isFull()) return false;
+        buffer[head] = item;
+        head = (head + 1) % SIZE;
+        count++;
+        return true;
+    }
 };
 ```
 
-Key implementation features:
+Buffer sizes are optimized for RobotZero's operation patterns:
+- Performance Buffer: 32 records (384 bytes)
+  - 50ms sampling: 1.6 seconds storage
+  - 20ms sampling: 0.64 seconds storage
+- Event Buffer: 16 records (128 bytes)
+- Stats Buffer: 8 records (128 bytes)
 
-```cpp
-bool CircularBuffer<T, SIZE>::push(const T& item) {
-   if (isFull()) {
-       return false;
-   }
+Total RAM usage: 640 bytes, balancing between data retention and Arduino Nano constraints.
 
-   buffer[head] = item;
-   head = (head + 1) % SIZE;
-   count++;
-   return true;
-}
+## Flash Memory Management
 
-bool CircularBuffer<T, SIZE>::pop(T& item) {
-   if (isEmpty()) {
-       return false;
-   }
-
-   item = buffer[tail];
-   tail = (tail + 1) % SIZE;
-   count--;
-   return true;
-}
-
-uint8_t CircularBuffer<T, SIZE>::pushMultiple(const T* items, uint8_t numItems) {
-   uint8_t added = 0;
-   for (uint8_t i = 0; i < numItems && !isFull(); i++) {
-       if (push(items[i])) {
-           added++;
-       }
-   }
-   return added;
-}
-```
-
-The buffer implements several crucial features:
-
-1. Template Design:
-  - Type-agnostic storage using template parameter `T`
-  - Fixed size specified by template parameter `SIZE`
-  - Zero dynamic memory allocation
-
-2. Atomic Operations:
-  - Single-operation updates to indexes
-  - Thread-safe count management
-  - Protection against buffer overflow/underflow
-
-3. Optimized Access:
-  - Direct pointer access for bulk operations
-  - Continuous read/write size calculations
-  - Efficient modulo operations using SIZE
-
-4. Performance Features:
-  - Zero-copy peek operations
-  - Batch push/pop capabilities
-  - Clear operation without memory reallocation
-
-The buffer is particularly optimized for the logger system's needs:
-
-```cpp
-// Example usage in Logger class
-static CircularBuffer<PerformanceRecord, LOG_BUFFER_SIZE> performanceBuffer;
-static CircularBuffer<EventRecord, EVENT_BUFFER_SIZE> eventBuffer;
-
-void Logger::logPerformance(int16_t linePosition, int16_t error,
-                         int16_t correction, uint8_t leftSpeed,
-                         uint8_t rightSpeed, uint8_t state) {
-   if (!loggingActive || !shouldSample()) return;
-
-   PerformanceRecord record;
-   record.timestamp = millis() - sessionStartTime;
-   record.linePosition = linePosition;
-   record.error = error;
-   record.correction = correction;
-   record.speedLeft = leftSpeed;
-   record.speedRight = rightSpeed;
-   record.state = state;
-   record.checksum = calculateChecksum(&record, 
-                    sizeof(PerformanceRecord) - sizeof(uint8_t));
-
-   if (!performanceBuffer.push(record)) {
-       flushBuffers();
-       performanceBuffer.push(record);
-   }
-}
-```
-
-The buffer sizes are configured in the debug configuration:
-
-```cpp
-static constexpr uint16_t PERFORMANCE_BUFFER_SIZE = 32;   // Performance records
-static constexpr uint16_t EVENT_BUFFER_SIZE = 16;         // Event records
-static constexpr uint16_t STATS_BUFFER_SIZE = 8;          // Statistics records
-```
-
-#### Buffer Size Impact in CircularBuffer Implementation
-
-The buffer sizes defined in the configuration layer directly impact the memory usage and behaviour of the circular buffers. Let's analyze each buffer's size and its implications:
-
-`PERFORMANCE_BUFFER_SIZE = 32`:
-
-- Stores `32` PerformanceRecord entries;
-- Each record is `12 bytes`;
-- Total memory: `32 * 12 = 384 bytes`;
-- At 50ms sampling rate (straight line): `1.6` seconds of data;
-- At 20ms sampling rate (curves): `0.64` seconds of data;
- 
-This size ensures enough data retention for curve analysis while maintaining minimal memory footprint.
-
-`EVENT_BUFFER_SIZE = 16`:
-
-- Stores `16 EventRecord` entries;
-- Each record is 8 bytes;
-- Total memory: 16 * 8 = 128 bytes.
-  
-Since events are discrete occurrences (like entering/exiting curves, lap markers), `16` entries must provide adequate buffering even during complex track sections.
-
-`STATS_BUFFER_SIZE = 8`:
-
-- Stores `8 LapStats` entries;
-- Each record is `16 bytes`;
-- Total memory: `8 * 16 = 128 bytes`.
-- 
-Eight entries support multi-lap analysis while keeping memory usage reasonable.
-
-Combined, these buffers use `640 bytes` of RAM, balancing between:
-
-- Data retention capability
-- Memory constraints of Arduino Nano ([@ArduinoNano]) (`2KB RAM`);
-- Flash write frequency (buffer flushes);
-- Real-time performance requirements.
-- 
-This implementation ensures efficient memory usage while providing reliable data buffering for the debug system, crucial for maintaining real-time performance during data collection.
-
-Logger Implementation
-
-The `Logger` class serves as the core component of RobotZero's analysis system, managing data collection and storage while ensuring minimal impact on the robot's primary line-following functionality. This class coordinates between real-time data collection and flash memory storage, implementing intelligent sampling and buffering strategies.
-
-Core functionality:
-
-```cpp
-class Logger {
-public:
-   static bool initialize();
-   static bool startSession(DebugMode mode, uint8_t plannedLaps);
-   static void endSession();
-   static void logPerformance(int16_t linePosition, int16_t error,
-                            int16_t correction, uint8_t leftSpeed,
-                            uint8_t rightSpeed, uint8_t state);
-   static void logEvent(EventType type, uint16_t data = 0);
-   static void logLapStats(const LapStats& stats);
-   static bool isLogging();
-   static void getSessionStats(uint32_t& duration, uint8_t& completedLaps,
-                             uint16_t& totalCurves, float& avgDeviation);
-   static void process();
-};
-```
-
-Key features:
-
-1. Adaptive Sampling Strategy:
-2. 
-  - Fast sampling (`20ms`) during curves for detailed analysis;
-  - Slower sampling (`50ms`) on straight lines to conserve memory;
-  - Sample collection only when `loggingActive` is true.
-
-3. Buffer Management:
-   
-  - Uses three circular buffers for different data types;
-  - Automatic buffer flushing when full;
-  - Write operations only during straight-line sections.
-
-4. Statistics Tracking:
-   
-  - Real-time calculation of performance metrics;
-  - Per-lap statistics accumulation;
-  - Running averages for deviation and speed.
-
-6. Flash Memory Integration:
-   
-  - Coordinated writes with `FlashManager`;
-  - Data integrity verification;
-  - Session management with headers and markers.
-
-The sampling decision logic is particularly sophisticated:
-
-```cpp
-bool Logger::shouldSample() {
-   uint32_t currentTime = millis();
-   int16_t position = Sensors::calculateLinePosition();
-   uint32_t sampleInterval;
-
-   if (abs(position) > TURN_THRESHOLD) {
-       sampleInterval = SAMPLE_RATE_CURVE;  // 20ms in curves
-   }
-   else {
-       sampleInterval = SAMPLE_RATE_STRAIGHT;  // 50ms in straight lines
-   }
-
-   if (currentTime - lastSampleTime >= sampleInterval) {
-       lastSampleTime = currentTime;
-       return true;
-   }
-
-   return false;
-}
-```
-
-## FlashManager Implementation (FlashManager.h / FlashManager.cpp)
-
-The `FlashManager` class **handles all flash memory operations in RobotZero's debug** system, providing a interface for data persistence. It manages a dedicated section of flash memory, implementing careful write strategies to ensure data integrity while working within the Arduino Nano ([@ArduinoNano])'s hardware constraints.
-
-Core interface:
+The `FlashManager` class implements a sophisticated page-aligned writing system:
 
 ```cpp
 class FlashManager {
-public:
-   static bool initialize();
-   static bool writeBlock(const void* data, uint16_t size);
-   static bool readBlock(void* data, uint16_t size, uint32_t address);
-   static bool canWrite(int16_t linePosition);
-   static uint32_t getCurrentAddress();
-   static bool hasSpace(uint16_t bytes);
-   static void reset();
-   static bool setLogReady();
-   static bool clearLogReady();
-   static bool isLogReady();
+    static uint32_t currentAddress;    // Current write position
+    static bool isInitialized;         // Initialization flag
+    
+    static bool writeBlock(const void* data, uint16_t size) {
+        if (!isInitialized || !hasSpace(size)) return false;
+        uint16_t pages = (size + FLASH_PAGE_SIZE - 1) / FLASH_PAGE_SIZE;
+        
+        for (uint16_t i = 0; i < pages; i++) {
+            uint16_t pageSize = min(size, FLASH_PAGE_SIZE);
+            if (!writePage(dataPtr, pageSize, address)) return false;
+            address += FLASH_PAGE_SIZE;
+            dataPtr += pageSize;
+            size -= pageSize;
+        }
+        return true;
+    }
 };
 ```
 
 Key features:
+- Starts at address 0x1000 (4KB offset)
+- Page-aligned writes (256 bytes)
+- Write verification
+- Atomic operations
 
-1. Memory Management:
-   
-  - Starts at address `0x1000` (`FLASH_LOG_START`);
-  - Page-aligned writes (`256 bytes` per page);
-  - Address tracking for sequential writes;
-  - Space availability checking.
+## Logger Implementation
 
-2. Safety Features:
-   
-  - Write permission based on robot's position;
-  - Page erase before write;
-  - Write verification;
-  - Atomic operations with interrupt control.
-
-4. Control System:
-   
-  - Log ready flag at `FLASH_CONTROL_BYTE`;
-  - Session state tracking;
-  - Error recovery capabilities.
-
-The flash writing sequence is particularly critical:
+The Logger orchestrates data collection and storage:
 
 ```cpp
-bool FlashManager::writeBlock(const void* data, uint16_t size) {
-   if (!isInitialized) return false;
-   if (!hasSpace(size)) return false;
+class Logger {
+    static bool isInitialized;
+    static bool loggingActive;
+    static uint32_t sessionStartTime;
+    
+    bool shouldSample() {
+        uint32_t currentTime = millis();
+        int16_t position = Sensors::calculateLinePosition();
+        uint32_t sampleInterval = (abs(position) > TURN_THRESHOLD) 
+            ? SAMPLE_RATE_CURVE    // 20ms
+            : SAMPLE_RATE_STRAIGHT;// 50ms
+            
+        if (currentTime - lastSampleTime >= sampleInterval) {
+            lastSampleTime = currentTime;
+            return true;
+        }
+        return false;
+    }
+};
+```
 
-   uint16_t pages = (size + FLASH_PAGE_SIZE - 1) / FLASH_PAGE_SIZE;
-   const uint8_t* dataPtr = (const uint8_t*)data;
-   uint32_t address = currentAddress;
+The system implements adaptive sampling:
+- Straight lines: 50ms intervals
+- Curves: 20ms intervals
+- Write operations during straight sections only
 
-   // Write process with verification
-   for (uint16_t i = 0; i < pages; i++) {
-       uint16_t pageSize = min(size, FLASH_PAGE_SIZE);
-       if (!erasePage(address)) return false;
-       if (!writePage(dataPtr, pageSize, address)) return false;
-       if (!verifyWrite(dataPtr, pageSize, address)) return false;
+## Course Markers Integration
 
-       address += FLASH_PAGE_SIZE;
-       dataPtr += pageSize;
-       size -= pageSize;
-   }
+The debug layer integrates directly with the CourseMarkers system:
 
-   currentAddress = address;
-   return true;
+```cpp
+void handleFinishLine() {
+    lapCount++;
+    if (lapCount == 2 && !isStopSequenceActive) {
+        isStopSequenceActive = true;
+        slowdownTimer.Start(50);
+        stopTimer.Start(STOP_DELAY);
+#if DEBUG_LEVEL > 0
+        FlashManager::setLogReady();
+#endif
+    }
 }
 ```
 
-Write operations are only permitted during straight-line movement:
+Events captured include:
+- Lap completions
+- Mode changes
+- Intersection detections
+- Speed transitions
 
-```cpp
-bool FlashManager::canWrite(int16_t linePosition) {
-   return (abs(linePosition) < STRAIGHT_THRESHOLD);
-}
-```
+## Data Transmission Protocol
 
-The memory layout is defined by configuration constants:
-
-```cpp
-static constexpr uint32_t FLASH_LOG_START = 0x1000;    // Start address
-static constexpr uint16_t FLASH_PAGE_SIZE = 256;       // Flash page size
-static constexpr uint32_t FLASH_CONTROL_BYTE = 0x0800; // Control byte
-static constexpr uint8_t FLASH_LOG_READY = 0xAA;       // Ready flag
-```
-
-#### Flash Memory Configuration Analysis
-
-The flash memory layout in RobotZero is carefully designed to maximize data storage while ensuring system stability. Let's analyze each configuration constant:
-
-1. `FLASH_LOG_START = 0x1000` (`4096` bytes offset):
-
-   - Starts after bootloader and program storage;
-   - Provides safe separation from application code;
-   - Can be increased (e.g., `0x2000`) if program size grows;
-   - Can be decreased (minimum `0x0900`) if more log space needed;
-   - Must maintain page alignment (`256-byte` boundary).
-
-2. `FLASH_PAGE_SIZE = 256`:
-
-   - Matches ATmega328P's flash page size ([@Microchip_ATmega328P]);
-   - Hardware-defined constant, should not be changed;
-   - Used for write operation alignment;
-   - Affects buffer flush timing and memory organization.
-
-3. `FLASH_CONTROL_BYTE = 0x0800` (`2048 bytes` offset):
-
-   - Located before log data section;
-   - Isolated location to prevent log data corruption;
-   - Can be relocated (e.g., `0x0900`, `0x0700`) if needed;
-   - Must avoid bootloader area (below `0x0700`);
-   - Must not overlap with log data section.
-
-`FLASH_LOG_READY = 0xAA`:
-
-   - Arbitrary bit pattern (`10101010`);
-   - Chosen for easy visual identification in memory dumps;
-   - Can be changed to any `8-bit` value except `0x00` and `0xFF`;
-   - Used to indicate valid log data presence.
-
-When modifying these values, always ensure:
-
-   - Page alignment for `FLASH_LOG_START`;
-   - No overlap between control byte and log data;
-   - Safe distance from bootloader section;
-   - Valid bit pattern for ready flag.
-
-### FlashReader Implementation (FlashReader.h / FlashReader.cpp)
-
-The `FlashReader` class manages data transmission from RobotZero's flash memory to the external analysis system. It implements a protocol that ensures data integrity and provides clear section delineation for the receiving system.
-
->**TODO**: The Logger's data writing, reading, and transmission processes have not been sufficiently tested.
-
-#### Protocol Structure:
+The FlashReader implements a robust transmission protocol:
 
 ```cpp
 class FlashReader {
-private:
-   static const char CMD_READ_FLASH = 'R';     // Command trigger
-   static const char CMD_ERASE_FLASH = 'E';    // Erase trigger
-   static const char START_MARKER = '$';       // Transmission start
-   static const char END_MARKER = '#';         // Transmission end
-
-   // Section identifiers
-   static const uint8_t MARKER_HEADER = 0x01;
-   static const uint8_t MARKER_PERFORMANCE = 0x02;
-   static const uint8_t MARKER_EVENT = 0x03;
-   static const uint8_t MARKER_LAP = 0x04;
-};
-```
-
-The transmission sequence follows a strict protocol:
-
-1. Start Marker (`$`)
-2. Section Headers (`0x01` to `0x04`)
-3. Section Data (Binary format)
-4. End Marker (`#`)
-5. Checksum (`2 bytes`, hex format)
-
-Data Transmission Sequence:
-
-```plaintext
-$ -> Header Data -> Performance Records -> Event Records -> Lap Stats -> # -> Checksum
-```
-
-Example of data flow:
-
-```cpp
-void FlashReader::processCommands() {
-    // Start marker
-    Serial.write(START_MARKER);
-Copy// Session header
-sendMarker(MARKER_HEADER);
-sendSessionHeader();
-
-// Performance data
-sendMarker(MARKER_PERFORMANCE);
-sendPerformanceRecords();
-
-// Event data
-sendMarker(MARKER_EVENT);
-sendEventRecords();
-
-// Lap statistics
-sendMarker(MARKER_LAP);
-sendLapStats();
-
-// End marker and checksum
-Serial.write(END_MARKER);
-sendChecksum();
-
-// Clear ready flag
-FlashManager::clearLogReady();
-}
-```
-
-The checksum calculation ensures data integrity:
-
-```cpp
-void FlashReader::sendChecksum() {
-    uint16_t checksum = 0;
-    uint32_t address = FLASH_LOG_START;
-    uint8_t byte;
-    while (address < FlashManager::getCurrentAddress()) {
-    if (FlashManager::readBlock(&byte, sizeof(byte), address)) {
-        checksum += byte;
+    static const char START_MARKER = '$';
+    static const char END_MARKER = '#';
+    static const uint8_t MARKER_HEADER = 0x01;
+    static const uint8_t MARKER_PERFORMANCE = 0x02;
+    
+    void processCommands() {
+        Serial.write(START_MARKER);
+        sendMarker(MARKER_HEADER);
+        sendSessionHeader();
+        sendMarker(MARKER_PERFORMANCE);
+        sendPerformanceRecords();
+        Serial.write(END_MARKER);
+        sendChecksum();
+        FlashManager::clearLogReady();
     }
-    address++;
-}
-
-writeHex((checksum >> 8) & 0xFF);  // High byte
-writeHex(checksum & 0xFF);         // Low byte
-}
+};
 ```
-Transmission is triggered by the start button when log data is ready, with LED patterns indicating transmission status. 
 
-#### LED Pattern During Data Transmission
+The protocol ensures reliable data transfer through:
+- Start/end markers
+- Section headers
+- Data validation checksums
 
-The LED pattern during transmission provides visual feedback about the data transfer process, alternating between two distinct patterns using RobotZero's status LED (pin 13):
+## LED Status Patterns
 
-1. Slow Blinking Pattern (First `3` seconds):
-   
-  - ON duration: `1000ms`;
-  - OFF duration: `1000ms`;
-  - Purpose: Indicates transmission initialization.
-  
-2. Fast Blinking Pattern (Next `3` seconds):
-   
-  - ON duration: `300ms`;
-  - OFF duration: `300ms`;
-  - Purpose: Indicates active data transfer.
+The LedPattern class provides visual feedback during debug operations:
 
 ```cpp
-void LedPattern::process() {
-   if (!isPatternActive) return;
-
-   uint32_t elapsed = millis() - patternStartTime;
-
-   // Switch pattern every 3 seconds
-   if (elapsed >= 3000 && patternState == 0) {
-       patternState = 1;
-       patternTimer.Start(300);  // Switch to fast blink
-   }
-   else if (elapsed >= 6000) {
-       patternState = 0;
-       patternTimer.Start(1000); // Back to slow blink
-       patternStartTime = millis();
-   }
-
-   if (patternTimer.Expired()) {
-       digitalWrite(PIN_STATUS_LED, !digitalRead(PIN_STATUS_LED));
-       patternTimer.Start(patternState == 0 ? 1000 : 300);
-   }
-}
-```
-
-The pattern cycles continuously during transmission:
-
-```plaintext
-3s (1000ms blink) -> 3s (300ms blink) -> repeat
-```
-
-## LEDPattern Implementation (LedPattern.h / LedPattern.cpp)
-
-The `LEDPattern` class manages RobotZero's visual feedback system, implementing precise timing control for status indication. While primarily used during data transmission, it provides a foundation for extensible status indication through LED patterns.
-
-Core Implementation:
-
-```cpp
-#ifndef LEDPATTERN_H
-#define LEDPATTERN_H
-
-#include "Timer.h"
-
 class LedPattern {
-public:
-   static void initialize();
-   static void startTransmissionPattern();
-   static void stopPattern();
-   static void process();
-
-private:
-   static Timer patternTimer;
-   static bool isPatternActive;
-   static uint8_t patternState;  // 0 = slow blink, 1 = fast blink
-   static uint32_t patternStartTime;
+    static Timer patternTimer;
+    static bool isPatternActive;
+    static uint8_t patternState;
+    
+    void process() {
+        uint32_t elapsed = millis() - patternStartTime;
+        if (elapsed >= 3000 && patternState == 0) {
+            patternState = 1;
+            patternTimer.Start(300);  // Fast blink
+        }
+        else if (elapsed >= 6000) {
+            patternState = 0;
+            patternTimer.Start(1000); // Slow blink
+            patternStartTime = millis();
+        }
+    }
 };
-
-#endif
 ```
 
-Key features:
+Patterns indicate:
+- Transmission initialization (1Hz blink)
+- Active data transfer (3.3Hz blink)
+- Operation completion
 
-1. State Management:
-   
-  - `patternState`: Tracks current blink pattern;
-  - `isPatternActive`: Controls pattern execution;
-  - `patternStartTime`: Manages pattern transitions.
-
-2. Timing Controls:
-   
-  - `LED_SLOW_BLINK = 1000`: Initial pattern timing (`1 second`);
-  - `LED_FAST_BLINK = 300`: Active transmission timing (`300ms`);
-  - `LED_PATTERN_SWITCH = 3000`: Pattern swap interval (`3 seconds`).
-
-3. Pattern Processing:
-
-  - Non-blocking operation;
-  - Precise timing through `Timer` class;
-  - Automatic pattern switching.
-
-The class provides three main timing constants:
-
-```cpp
-// LED Pattern parameters
-static constexpr uint16_t LED_SLOW_BLINK = 1000;       // Slow blink interval (ms)
-static constexpr uint16_t LED_FAST_BLINK = 300;        // Fast blink interval (ms)
-static constexpr uint16_t LED_PATTERN_SWITCH = 3000;   // Time to switch patterns (ms)
-```
-
-Pattern initialization and control:
-
-```cpp
-void LedPattern::initialize() {
-   pinMode(PIN_STATUS_LED, OUTPUT);
-}
-
-void LedPattern::startTransmissionPattern() {
-   isPatternActive = true;
-   patternState = 0;
-   patternStartTime = millis();
-   patternTimer.Start(1000); // Start with slow blink
-}
-
-void LedPattern::stopPattern() {
-   isPatternActive = false;
-   digitalWrite(PIN_STATUS_LED, LOW);
-}
-```
-
-This implementation provides visual feedback during data transmission while maintaining minimal processor overhead through.
-
-## Timer Implementation (Timer.h)
-
-The `Timer` class, while not exclusive to the Debug Layer, plays a crucial role in managing various timing operations throughout the debug system. **It provides non-blocking timing control with millisecond precision**.
-
-Core Implementation:
-
-```cpp
-#ifndef TIMER_H
-#define TIMER_H
-
-#include <Arduino.h>
-
-class Timer {
-private:
-   unsigned long startTime;    // Start timestamp
-   unsigned long duration;     // Timer duration
-   bool running;              // Timer state
-
-public:
-   Timer() : startTime(0), duration(0), running(false) {}
-   void Start(unsigned long ms);
-   bool Expired();
-   void Stop();
-};
-
-#endif
-```
-
-The Timer implementation excels in its efficient resource management and precise timing control. Each Timer instance initializes with zero overhead, requiring no dynamic memory allocation and maintaining only three essential variables: `startTime`, `duration`, and `running`. This minimal footprint allows for multiple Timer instances throughout the system without significant memory impact.
-
-**While the current implementation uses `millis()` for millisecond precision, the architecture supports microsecond precision through simple adaptation to `micros()`. The choice of millisecond precision balances timing accuracy with counter overflow considerations - the millisecond counter takes approximately 50 days to overflow, versus approximately 70 minutes for microseconds**.
-
-The non-blocking operation is crucial for the debug system's performance. Instead of using delay functions that would halt program execution, the Timer continuously compares the current time against the start time plus duration. This allows the robot to continue normal operation while managing multiple timing operations simultaneously.
-
-The Timer provides both manual and automatic state management. One can explicitly stop a timer using the `Stop()` method, useful when cancelling operations. Additionally, the timer automatically manages its state through the `Expired()` method - once a timer expires, it automatically stops and subsequent `Expired()` calls return false until the timer is restarted. This automatic state management prevents timing errors from accumulating across multiple operations.
-
-Developers can modify timing durations at runtime by simply calling `Start()` with a new duration value. This flexibility allows for dynamic timing adjustments based on robot conditions - for example, adjusting sampling rates based on the robot's current speed or position on the track.
-
-Implementation Details:
-
-```cpp
-void Timer::Start(unsigned long ms) {
-   startTime = millis();
-   duration = ms;
-   running = true;
-}
-
-bool Timer::Expired() {
-   if (!running) return false;
-   if (millis() - startTime >= duration) {
-       running = false;
-       return true;
-   }
-   return false;
-}
-
-void Timer::Stop() {
-   running = false;
-}
-```
-
-The Timer class is used extensively in debug operations:
-
-1. Sample Rate Control:
-   
-   - Performance data: 20ms/50ms intervals;
-   - Event logging: Precise event timing;
-   - LED patterns: Pattern switching timing.
-
-2. Flash Operations:
-
-   - Write timing management;
-   - Buffer flush intervals;
-   - Transmission coordination.
-  
-Example usage in the Logger:
-
-```cpp
-bool Logger::shouldSample() {
-uint32_t currentTime = millis();
-uint32_t sampleInterval = (abs(position) > TURN_THRESHOLD)
-? SAMPLE_RATE_CURVE    // 20ms
-: SAMPLE_RATE_STRAIGHT; // 50ms
-Copyif (currentTime - lastSampleTime >= sampleInterval) {
-    lastSampleTime = currentTime;
-    return true;
-}
-return false;
-}
-```
-
+This comprehensive debug system enables detailed analysis of RobotZero's behavior while maintaining efficient operation through careful resource management and conditional compilation.

@@ -18,7 +18,7 @@ Manages global state variables that need to be accessed across different modules
 
 ### debug.h
 
-Implements a sophisticated debug message system that stores strings in Flash memory instead of RAM, using `PROGMEM` for optimal memory usage. This approach ensures that debug capabilities don't impact the robot's limited RAM resources.
+Implements a  debug message system that stores strings in Flash memory instead of RAM, using `PROGMEM` for optimal memory usage. This approach ensures that debug capabilities don't impact the robot's limited RAM resources.
 
 ## Hardware Interface Layer
 
@@ -48,7 +48,7 @@ Manages different operation profiles (analysis and speed modes). The key innovat
 
 ### Logger
 
-Implements a sophisticated logging system using circular buffers to maintain performance. A key feature is its ability to write to flash memory only during straight-line sections, ensuring logging doesn't interfere with critical control operations.
+Implements a  logging system using circular buffers to maintain performance. A key feature is its ability to write to flash memory only during straight-line sections, ensuring logging doesn't interfere with critical control operations.
 
 ### FlashManager
 

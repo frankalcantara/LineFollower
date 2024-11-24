@@ -1,39 +1,64 @@
 # Main Layer Implementation (main.cpp)
 
-The `main.cpp` file serves as the orchestration center for RobotZero, integrating all layers and managing the robot's core operation sequence. The implementation follows a clear state machine pattern during setup and implements a sophisticated control loop for line following.
+The main layer serves as RobotZero's orchestration center, integrating all subsystems and managing the robot's core operation sequence. The implementation follows a non-blocking state machine pattern during setup and implements a  control loop for line following, with careful integration of the CourseMarkers system and debug capabilities.
 
-## Setup Phase
+## Setup Phase Implementation
 
-The initialization process follows a non-blocking state machine with seven states:
+The initialization process follows a carefully designed state machine with seven distinct states:
 
-``` cpp
+```cpp
 enum SetupState {
-   SETUP_INIT,        // Initial system configuration
-   SETUP_WAIT1,       // First stabilization delay
-   SETUP_WAIT2,       // Second stabilization delay
-   SETUP_BUTTON1,     // Wait for first button press
-   SETUP_CALIBRATION, // Sensor calibration sequence
-   SETUP_BUTTON2,     // Wait for start signal
-   SETUP_COMPLETE     // System ready
+    SETUP_INIT,        // Initial system configuration
+    SETUP_WAIT1,       // First stabilization delay
+    SETUP_WAIT2,       // Second stabilization delay
+    SETUP_BUTTON1,     // Wait for first button press
+    SETUP_CALIBRATION, // Sensor calibration sequence
+    SETUP_BUTTON2,     // Wait for start signal
+    SETUP_COMPLETE     // System ready
 };
 ```
 
-Each state ensures proper system initialization without blocking operations. This is particularly important for sensor stabilization and user interaction.
+During the setup phase, the system progresses through these states sequentially, ensuring proper hardware initialization and system stability. The non-blocking design allows for proper timing and user interaction without using delay functions that could impact system responsiveness:
 
-## Main Loop
+```cpp
+void setup() {
+#if DEBUG_LEVEL > 0
+    Serial.begin(115200);
+    ProfileManager::initialize(currentDebugMode);
+    kProportional = ProfileManager::getKP(K_PROPORTIONAL_DEFAULT);
+    kDerivative = ProfileManager::getKD(K_DERIVATIVE_DEFAULT);
+    filterCoefficient = ProfileManager::getFilterCoefficient(FILTER_COEFFICIENT_DEFAULT);
+    FlashManager::initialize();
+    Logger::initialize();
+#endif
 
-The main control loop has been optimized to work efficiently with the time-controlled CourseMarkers system:
+    SetupState setupState = SETUP_INIT;
+    Timer setupTimer;
 
-``` cpp
+    while (setupState != SETUP_COMPLETE) {
+        switch (setupState) {
+        case SETUP_INIT:
+            setupTimer.Start(SETUP_DELAY);
+            setupState = SETUP_WAIT1;
+            break;
+            // ... additional states
+        }
+    }
+}
+```
+
+## Main Control Loop
+
+The main control loop implements a  integration between the CourseMarkers system, debug facilities, and core robot control:
+
+```cpp
 void loop() {
 #if DEBUG_LEVEL > 0
     LedPattern::process();
 #endif
 
-    // Process marker signals with optimized timing
     CourseMarkers::processMarkerSignals();
 
-    // Skip control if robot is stopped
     if (isRobotStopped) {
         MotorDriver::setMotorsPower(0, 0);
 #if DEBUG_LEVEL > 0
@@ -44,57 +69,95 @@ void loop() {
         return;
     }
 
-    // Position and error calculation
+    // Core control sequence
     int linePosition = Sensors::calculateLinePosition();
     int error = linePosition - targetLinePosition;
-
-    // Update current speed using optimized control
+    
 #if DEBUG_LEVEL > 0
     currentSpeed = ProfileManager::getSpeedValue(CourseMarkers::speedControl(error));
 #else
     currentSpeed = CourseMarkers::speedControl(error);
 #endif
 
-    // Error derivative calculation and filtering
+    // PID and motor control
     int d_error = error - previousError;
     filteredErrorRate = filterCoefficient * d_error + 
-                      (1 - filterCoefficient) * filteredErrorRate;
+                       (1 - filterCoefficient) * filteredErrorRate;
 
-    // PID correction calculation
     float proportional_term = kProportional * error;
     float derivative_term = kDerivative * filteredErrorRate;
     float total_correction = proportional_term + derivative_term;
-
-    // Speed adjustment for high velocities
-    float speed_factor = (currentSpeed > 200) ? 0.85f : 1.0f;
-    int correction_power = constrain(int(total_correction * speed_factor), -255, 255);
-
-    // Motor power application
-    int left_power = constrain(currentSpeed + correction_power, -255, 255);
-    int right_power = constrain(currentSpeed - correction_power, -255, 255);
-
-    MotorDriver::setMotorsPower(left_power, right_power);
 }
 ```
 
-The main control loop has been designed to work in synchronization with the time-controlled CourseMarkers system. At its core, the integration revolves around the **principle of minimal interference between different control aspects while maintaining precise timing and efficient resource usage**.
+## Control System Integration
 
-The marker processing system operates on a fixed `2ms` interval, managed entirely within the CourseMarkers class. When the main loop calls `processMarkerSignals()`, the function internally checks if enough time has elapsed since the last marker reading. This time-controlled approach eliminates the need for delay functions or complex timing management in the main loop, allowing the system to maintain consistent response times while preventing unnecessary sensor readings. The LED status updates, previously handled in multiple locations, are now centralized within the CourseMarkers class and only occur when markers are actually detected, reducing unnecessary GPIO operations.
+The control system implements several features:
 
-Speed control has been tightly integrated with the marker detection system through an optimized decision tree. When the CourseMarkers system detects a curve condition, it immediately adjusts the speed without waiting for the next control cycle. This early-return mechanism significantly reduces processing time by skipping unnecessary calculations when the robot's state is already determined. The system maintains a minimal set of state variables (`isTurning`, `isExitingTurn`, `boostCountdown`) that efficiently track the robot's movement status without requiring complex data structures or extensive memory usage.
+1. **Early Return Optimization**: The system checks for stopped condition before performing any control calculations, optimizing processor usage.
 
-![Speed Control Decision Tree](images/DecisonTree.drawio.png){fig-align="center"}
+2. **Time-Critical Operations**: Marker processing occurs at the start of each loop, ensuring consistent timing for course feature detection.
 
-The PID control system operates independently but in coordination with the speed control system. Position errors are processed continuously, but the applied corrections are scaled based on the current speed profile. This separation of concerns allows each system to operate optimally within its domain while still working together coherently. The implementation uses direct calculations instead of lookup tables, and the derivative term is filtered using a simple but effective exponential filter that requires only a single additional variable (\`filteredErrorRatev).
+3. **Adaptive Speed Control**: The system dynamically adjusts motor power based on current conditions:
+   
+    ```cpp
+    float speed_factor = (currentSpeed > 200) ? 0.85f : 1.0f;
+    int correction_power = constrain(int(total_correction * speed_factor), -255, 255);
 
-For example, when approaching a curve, the system's response follows a precisely coordinated sequence: the marker detection system identifies the curve marker within its 2ms timing window, immediately triggers a speed adjustment through the early-return mechanism, and the PID controller smoothly adapts its corrections based on the new speed profile. All of this occurs without explicit synchronization code or complex timing management in the main loop.
+    int left_power = constrain(currentSpeed + correction_power, -255, 255);
+    int right_power = constrain(currentSpeed - correction_power, -255, 255);
+    ```
 
-This integrated approach has shown significant improvements in processing efficiency. By allowing each subsystem to manage its own timing and state while maintaining clean interfaces between components, the implementation achieves both precise control and efficient resource usage. Testing in high-speed conditions has demonstrated that the system can maintain reliable marker detection and smooth motion control while operating at maximum speed, validating the effectiveness of this harmonized design approach.
+4. **Error Filtering**: The derivative term uses an exponential filter to smooth sensor noise while maintaining responsiveness:
+   
+    ```cpp
+    filteredErrorRate = filterCoefficient * d_error + 
+                    (1 - filterCoefficient) * filteredErrorRate;
+    ```
 
-**Control Parameters**: The main loop maintains critical control variables:
+## Debug Integration
 
-``` cpp
-// Control parameters
+When operating in debug mode (`DEBUG_LEVEL > 0`), the system provides comprehensive monitoring and analysis capabilities:
+
+```cpp
+#if DEBUG_LEVEL > 0
+    if (Logger::isLogging()) {
+        uint8_t state = 0;
+        if (isPrecisionMode) state |= 0x01;
+        if (abs(error) > TURN_THRESHOLD) state |= 0x02;
+
+        Logger::logPerformance(linePosition, error, correction_power,
+            left_power, right_power, state);
+        Logger::process();
+    }
+#endif
+```
+
+The debug system captures:
+- Line position and error values;
+- Applied corrections and motor powers;
+- System state flags (precision mode, turn detection);
+- Performance metrics for post-run analysis.
+
+## Global State Management
+
+The system maintains critical state variables that coordinate behaviour across all components:
+
+```cpp
+int currentSpeed = 0;               // Current base speed
+bool isRobotStopped = false;        // Robot stopped state
+bool isStopSequenceActive = false;  // Stopping sequence active
+int lapCount = 0;                   // End marker counter
+bool isPrecisionMode = false;       // Precision mode active
+```
+
+These variables are carefully managed to ensure consistent behaviour across all operating modes and conditions.
+
+## Control Parameters
+
+The control system maintains configurable parameters that can be adjusted based on operating mode:
+
+```cpp
 int targetLinePosition = POSICION_IDEAL_DEFAULT;
 float kProportional = K_PROPORTIONAL_DEFAULT;
 float kDerivative = K_DERIVATIVE_DEFAULT;
@@ -103,248 +166,15 @@ int filteredErrorRate = 0;
 int previousError = 0;
 ```
 
-The main control loop implements a sophisticated PID control system with filtered derivative action:
+In debug mode, these parameters can be modified by the ProfileManager to optimize performance for different operating conditions.
 
-``` cpp
-void loop() {
-#if DEBUG_LEVEL > 0
-   LedPattern::process();
-#endif
+## Performance Considerations
 
-   CourseMarkers::processMarkerSignals();
+The main control loop has been optimized for the Arduino Nano's limited resources:
+- Critical operations are prioritized at the start of each loop;
+- Conditional compilation removes debug overhead in production;
+- State variables are used efficiently to minimize RAM usage;
+- Calculations use integer arithmetic where possible;
+- Function calls are minimized in critical paths.
 
-   if (isRobotStopped) {
-       MotorDriver::setMotorsPower(0, 0);
-#if DEBUG_LEVEL > 0
-       if (Logger::isLogging()) {
-           Logger::endSession();
-       }
-#endif
-       return;
-   }
-
-   // Position and error calculation
-   int linePosition = Sensors::calculateLinePosition();
-   int error = linePosition - targetLinePosition;
-
-   // Speed control based on error
-#if DEBUG_LEVEL > 0
-   currentSpeed = ProfileManager::getSpeedValue(CourseMarkers::speedControl(error));
-#else
-   currentSpeed = CourseMarkers::speedControl(error);
-#endif
-
-   // Error derivative calculation and filtering
-   int d_error = error - previousError;
-   filteredErrorRate = filterCoefficient * d_error + 
-                      (1 - filterCoefficient) * filteredErrorRate;
-
-   // PID correction calculation
-   float proportional_term = kProportional * error;
-   float derivative_term = kDerivative * filteredErrorRate;
-   float total_correction = proportional_term + derivative_term;
-
-   // Speed adjustment for high velocities
-   float speed_factor = (currentSpeed > 200) ? 0.85f : 1.0f;
-   int correction_power = constrain(int(total_correction * speed_factor), -255, 255);
-
-   // Motor power application
-   int left_power = constrain(currentSpeed + correction_power, -255, 255);
-   int right_power = constrain(currentSpeed - correction_power, -255, 255);
-
-   MotorDriver::setMotorsPower(left_power, right_power);
-   previousError = error;
-
-   // Debug data logging
-#if DEBUG_LEVEL > 0
-   if (Logger::isLogging()) {
-       uint8_t state = 0;
-       if (isPrecisionMode) state |= 0x01;
-       if (abs(error) > TURN_THRESHOLD) state |= 0x02;
-
-       Logger::logPerformance(linePosition, error, correction_power,
-           left_power, right_power, state);
-       Logger::process();
-   }
-#endif
-}
-```
-
-The main loop's architecture provides a integration of RobotZero's various subsystems. At its core, the loop continuously polls system states rather than waiting for events, ensuring smooth operation without any blocking delays. This polling approach allows the robot to respond immediately to line position changes, marker detections, and user inputs while maintaining precise timing for control calculations.
-
-The implementation uses preprocessor directives (`#if DEBUG_LEVEL > 0`) to seamlessly integrate debugging capabilities without impacting normal performance. When debug mode is active, the loop incorporates additional data collection and LED pattern processing, but these operations are completely removed from the compiled code in production mode, ensuring zero overhead during competitions.
-
-The control system implements a PID controller with special attention to derivative filtering. Rather than using raw error differences, which can amplify sensor noise, the system employs an exponential filter (`filteredErrorRate`) that smooths the derivative term while maintaining responsive control. This filtering approach is particularly crucial during high-speed operation where sensor noise could cause unstable behaviour.
-
-Motor control calculations incorporate a sophisticated speed-based correction scaling. When operating at high speeds (above 200 PWM), the system automatically reduces the correction factor to 85%, preventing overcorrection that could lead to oscillations. This adaptive approach allows aggressive corrections at lower speeds while maintaining stability during high-speed straight-line runs.
-
-The motor power management system implements bidirectional control with careful attention to power constraints. All motor commands are processed through the `constrain()` function, ensuring values remain within the valid PWM range (-255 to +255). The differential drive calculations (`currentSpeed ± correction_power`) provide smooth transitions between straight-line tracking and turning manurers.
-
-In debug mode, the system maintains detailed operational records without impacting control timing. The loop captures comprehensive performance data including line position, calculated error, applied corrections, and motor powers. Additionally, it tracks system states like precision mode activation and curve detection through bitwise flags, providing detailed context for post-run analysis. This data collection system operates in parallel with the control calculations, maintaining microsecond-level timing precision while accumulating valuable debugging information.
-
-This integrated approach results in a control system that maintains precise line following across a wide range of speeds while providing deep insight into system behaviour when needed for optimization or troubleshooting.
-
-#### Line Following Robot Control Theory vs Implementation
-
-The theoretical approach for line following control focuses on developing a control law that adjusts the robot's direction to minimize lateral error $e$. The system dynamics are described by:
-
-$$
-\dot{e} = v \sin \alpha
-$$
-
-Where:
-
--   $e$ is the lateral error relative to the desired trajectory;
--   $v$ is the robot's linear velocity;
--   $\alpha$ is the angle between the robot's direction and desired trajectory.
-
-Taking the time derivative:
-
-$$
-\ddot{e} = v \dot{\alpha} \cos \alpha
-$$
-
-For most line following scenarios, we can approximate the orientation error rate $\alpha$ to be approximately equal to the robot's angular velocity $\omega$:
-
-$$
-\dot{\alpha} \approx \omega
-$$
-
-Therefore:
-
-$$
-\ddot{e} = v \omega \cos \alpha
-$$
-
-To linearize this nonlinear system, we introduce a new control variable $\eta$:
-
-$$
-\eta = v \omega \cos \alpha
-$$
-
-This transforms our system into:
-
-$$
-\ddot{e} = \eta
-$$
-
-This linear second-order system allows for a PID control law:
-
-$$
-\eta = -K_p e - K_d \dot{e} - K_i \int e \, dt
-$$
-
-The angular velocity $\omega$ can then be derived:
-
-$$
-\omega = \frac{\eta}{v \cos \alpha}
-$$
-
-For small angles, we can simplify to:
-
-$$
-\omega = \frac{\eta}{v}
-$$
-
-Implementation Constraints:
-
-While this control approach provides superior theoretical performance, practical implementation on RobotZero's Arduino Nano ([@ArduinoNano]) platform would require:
-
-1.  Flash Memory: Additional `~30%` (`~8KB`) for enhanced control algorithms and sensor processing;
-2.  RAM: \~15% increase (`~300 bytes`) for additional state variables and calculations;
-3.  Processing Time: Doubled control loop duration due to complex mathematical operations.
-
-These requirements exceed available resources on the Arduino Nano ([@ArduinoNano]) platform. Therefore, RobotZero implements a simplified PID variant that maintains acceptable performance while operating within hardware constraints:
-
-``` cpp
-float proportional_term = kProportional * error;
-float derivative_term = kDerivative * filteredErrorRate;
-float total_correction = proportional_term + derivative_term;
-```
-
-#### Adding Integral Control Analysis
-
-To implement integral control in RobotZero's current architecture, we would need relatively minor modifications compared to the full theoretical model. Here's the analysis:
-
-Code Modifications Required:
-
-1.  Add integral term to control variables:
-
-``` cpp
-// Control parameters - add to main.cpp
-float kIntegral = K_INTEGRAL_DEFAULT;    // Integral gain
-float integralError = 0;                 // Accumulated error
-float integralLimit = 200.0f;            // Anti-windup limit
-```
-
-1.  Modify the main control loop:
-
-    ``` cpp
-    // In main loop, after error calculation
-    integralError += error * loopInterval;  // Loop interval in seconds
-
-    // Anti-windup protection
-    integralError = constrain(integralError, -integralLimit, integralLimit);
-
-    // PID correction calculation
-    float proportional_term = kProportional * error;
-    float derivative_term = kDerivative * filteredErrorRate;
-    float integral_term = kIntegral * integralError;
-    float total_correction = proportional_term + derivative_term + integral_term;
-    ```
-
-    In PID control systems, integral windup (or reset windup) is a serious problem that occurs when the integral term accumulates larger error than the system can physically correct. This situation typically happens when the actuator reaches its physical limits (saturation), but the integral term continues to accumulate error. For example, in RobotZero's case:
-
-    ```         
-    - The motors have a maximum `PWM` value of `255`;
-    - If the robot is far from the line, the error is large;
-    - The integral term keeps accumulating this error;
-    - Even if the robot returns to the line, the accumulated integral term remains large;
-    - This causes significant overshoot and oscillation;
-    ```
-
-    Consider this scenario:
-
-    1.  Robot loses the line (large error);
-    2.  Without anti-windup: integral term keeps growing indefinitely;
-    3.  When line is found again, the huge integral term causes the robot to overshoot;
-    4.  This leads to oscillations or even complete loss of control.
-
-    The anti-windup protection:
-
-2.  Add configuration constant:
-
-    ``` cpp
-    // In config.h
-    static constexpr float K_INTEGRAL_DEFAULT = 0.1f;
-    ```
-
-3.  Update ProfileManager for debug modes:
-
-    ``` cpp
-    struct SpeedProfile {
-    // Existing members...
-    float kIntegral;            // Add integral gain
-    };
-    ```
-
-4.  Resource Impact:
-
-    -   Flash Memory: `~100 bytes` (negligible increase)
-    -   RAM: `8 bytes` (`2 floats`: integralError and integralLimit)
-    -   Processing Time: `<5%`increase per control loop
-
-Debug System Impact:
-
-1.  Expand PerformanceRecord:
-
-    ``` cpp
-    struct PerformanceRecord {
-    // Existing members...
-    float integralTerm;    // Add if detailed analysis needed
-    };
-    ```
-
-The implementation of integral control represents a modest addition to RobotZero's existing architecture. The system requires no additional hardware components to function, allowing us to maintain the current sensor and motor configuration. Memory utilization remains efficient, requiring only eight bytes of RAM for the integral accumulator and limit values, while the flash memory increase is negligible at approximately 100 bytes. The mathematical computations involved - primarily addition for accumulation and a single multiplication for the integral term - introduce minimal computational overhead to the control loop. Furthermore, the existing control structure accommodates this addition naturally, as the integral term simply extends the current proportional and derivative calculations without requiring architectural changes.
-
-While implementing the integral term itself is straightforward, the real challenge lies in the calibration process. Tuning three interconnected gains - proportional, integral, and derivative - requires more sophisticated calibration procedures than the current two-gain system. Each gain affects the others, creating a more complex optimization problem. However, this calibration complexity represents a one-time configuration challenge rather than an ongoing resource constraint, making it a worthwhile trade-off for the improved steady-state error elimination that integral control provides.
+This implementation provides precise control while maintaining real-time performance and enabling  debug capabilities when needed.

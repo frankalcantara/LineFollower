@@ -198,7 +198,7 @@ const char DEBUG_SETUP_START[] PROGMEM = "Starting setup";
 const char DEBUG_SETUP_COMPLETE[] PROGMEM = "Setup completed";
 ```
 
-These string constants are stored in program memory using the `PROGMEM` attribute. This approach saves precious RAM space on the Arduino Nano ([@ArduinoNano]), which only has `2KB` available. To facilitate reading these stored strings, the system implements a helper function:
+These string constants are stored in program memory using the `PROGMEM` attribute. This approach saves precious RAM space on the Arduino Nano [@ArduinoNano], which only has `2KB` available. To facilitate reading these stored strings, the system implements a helper function:
 
 ```cpp
 // Helper function to print strings from Flash

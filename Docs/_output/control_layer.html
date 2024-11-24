@@ -186,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./testing_guide.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Line Following Robot Test Guide</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Testing Guide</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -718,7 +718,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not[aria-hidden]:not(.dropdown-item):not(.quarto-navigation-tool)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {
@@ -847,7 +847,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
           }
         } else {
           // See if we can fetch this
-          fetch(url.split('#')[0])
+          fetch(url.split('#')[0]
           .then(res => res.text())
           .then(html => {
             const parser = new DOMParser();
@@ -910,12 +910,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         let parent = null;
         if (lineIds.length > 0) {
             //compute the position of the single el (top and bottom and make a div)
-            const el = window.document.getElementById(lineIds[0]);
+            const el = window.document.getElementById(lineIds[0];
             top = el.offsetTop;
             height = el.offsetHeight;
             parent = el.parentElement.parentElement;
           if (lineIds.length > 1) {
-            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1];
             const bottom = lastEl.offsetTop + lastEl.offsetHeight;
             height = bottom - top;
           }
@@ -1048,8 +1048,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./testing_guide.html" class="pagination-link" aria-label="Line Following Robot Test Guide">
-        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Line Following Robot Test Guide</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./testing_guide.html" class="pagination-link" aria-label="Testing Guide">
+        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Testing Guide</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
