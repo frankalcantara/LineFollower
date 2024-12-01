@@ -10,7 +10,7 @@ book:
   title: "RobotZero"
   subtitle: "A Comprehensive Environment for Line-Following Robot Development"
   author: "Frank Coelho de Alcantara"
-  date: "10/11/2024"
+  date: "11/22/2024"
   chapters:
     - index.qmd
     - oper.qmd
@@ -23,7 +23,7 @@ book:
   site-url: https://frankalcantara.com
   repo-url: https://github.com/frankalcantara/linefollower
   repo-actions: [edit, issue]
-
+  
 bibliography: references.bib
 
 format:
@@ -33,12 +33,12 @@ format:
       dark: darkly
     code-background: true
     code-copy: true
-    css: styles.css
+    css: styles\styles.css
     code-block-bg: true
     code-block-border-left: "#31BAE9"
     highlight-style: github
     navigation:
-      type: "numbered"
+      type: tabs
     metadata:
       twitter-card: true
       open-graph: true
@@ -52,7 +52,8 @@ format:
       right:
         - icon: github
           href: https://github.com/frankalcantara/linefollower
-
+        - text: Download PDF
+          href: _output/RobotZero.pdf  
   pdf:
     documentclass: scrreprt
     papersize: a4paper

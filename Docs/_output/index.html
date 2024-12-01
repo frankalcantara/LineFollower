@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Frank Coelho de Alcantara">
-<meta name="dcterms.date" content="2024-10-11">
+<meta name="dcterms.date" content="2024-11-22">
 
 <title>RobotZero</title>
 <style>
@@ -93,7 +93,7 @@ div.csl-indent {
 }</script>
 
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles/styles.css">
 <meta property="og:title" content="RobotZero">
 <meta property="og:description" content="A Comprehensive Environment for Line-Following Robot Development">
 <meta property="og:site_name" content="RobotZero">
@@ -155,7 +155,7 @@ div.csl-indent {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./block.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RoboZero Modules Description</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RobotZero Modules Description</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -192,7 +192,7 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-platform-arduino-nano-arduinonano" id="toc-the-platform-arduino-nano-arduinonano" class="nav-link active" data-scroll-target="#the-platform-arduino-nano-arduinonano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano (<span class="citation" data-cites="ArduinoNano">Arduino (2024)</span>)</a></li>
+  <li><a href="#the-platform-arduino-nano" id="toc-the-platform-arduino-nano" class="nav-link active" data-scroll-target="#the-platform-arduino-nano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano</a></li>
   <li><a href="#project-overview" id="toc-project-overview" class="nav-link" data-scroll-target="#project-overview"><span class="header-section-number">0.2</span> Project Overview</a></li>
   <li><a href="#why-c" id="toc-why-c" class="nav-link" data-scroll-target="#why-c"><span class="header-section-number">0.3</span> Why C++?</a></li>
   </ul>
@@ -221,7 +221,7 @@ div.csl-indent {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 11, 2024</p>
+      <p class="date">November 22, 2024</p>
     </div>
   </div>
   
@@ -233,15 +233,15 @@ div.csl-indent {
 </header>
 
 
-<p>A line following robot is an autonomous system designed to follow a path marked by a line on the ground. These robots are often considered an entry point into robotics and automation, as they incorporate fundamental concepts of sensor reading, motor control, and real-time decision making. However, while the basic concept might seem simple, developing a high-performance line follower requires control systems and precise calibration.</p>
+<p>A line following robot is an autonomous system designed to follow a path marked by a line on the ground. These robots are often considered an entry point into robotics and automation, as they incorporate fundamental concepts of sensor reading, motor control, and real-time decision making. However, while the basic concept might seem simple, developing a high-performance line follower requires control systems, real-time control, speed, acceleration, and jerk management, performance analysis, and the definition and fine-tuning of a PID controller, all of which demand precise calibration.</p>
 <p>Named <strong>RobotZero</strong>, this project embodies the concept of starting from zero - both for those beginning their journey in robotics and in homage to DeepMind’s AlphaGo Zero. Like its namesake, which learned chess and Go from scratch, achieving mastery through self-play and analysis, RoboTZero is designed to be a foundation for learning through systematic data collection and analysis. Despite its diminutive size and seemingly simple purpose, the robot incorporates logging and analysis capabilities that transform it from a basic line follower into a platform for understanding robotics fundamentals, control systems, and performance optimization. It represents “zero” not as nothing, but as the essential starting point for building knowledge and expertise in robotics.</p>
-<section id="the-platform-arduino-nano-arduinonano" class="level2" data-number="0.1">
-<h2 data-number="0.1" class="anchored" data-anchor-id="the-platform-arduino-nano-arduinonano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano (<span class="citation" data-cites="ArduinoNano">Arduino (<a href="references.html#ref-ArduinoNano" role="doc-biblioref">2024</a>)</span>)</h2>
-<p>For this project, we chose the Arduino Nano <span class="citation" data-cites="ArduinoNano">(<a href="references.html#ref-ArduinoNano" role="doc-biblioref">Arduino 2024</a>)</span> as our main controller specifically for its constrained environment. When we can achieve efficiency and speed within such limitations, we learn how to optimize ideas, algorithms, and programs - skills that are valuable across all computing platforms. The Arduino Nano <span class="citation" data-cites="ArduinoNano">(<a href="references.html#ref-ArduinoNano" role="doc-biblioref">Arduino 2024</a>)</span>, based on the ATmega328P microcontroller, offers a small form factor (45 x 18 mm), ideal for compact robot designs. It includes 32KB of Flash memory, suitable for our advanced logging system, 2KB of SRAM for runtime operations, and runs at 16MHz, providing adequate processing power. The board features multiple analog inputs for our sensor array, PWM outputs for precise motor control, and maintains low power consumption while being cost-effective for both prototyping and final implementation.</p>
+<section id="the-platform-arduino-nano" class="level2" data-number="0.1">
+<h2 data-number="0.1" class="anchored" data-anchor-id="the-platform-arduino-nano"><span class="header-section-number">0.1</span> The Platform: Arduino Nano</h2>
+<p>For the first version, this project, we chose the Arduino Nano <span class="citation" data-cites="ArduinoNano">(<a href="references.html#ref-ArduinoNano" role="doc-biblioref">Arduino 2024</a>)</span> as our main controller specifically for its constrained environment. When we can achieve efficiency and speed within such limitations, we learn how to optimize ideas, algorithms, and programs - skills that are valuable across all computing platforms. The Arduino Nano <span class="citation" data-cites="ArduinoNano">(<a href="references.html#ref-ArduinoNano" role="doc-biblioref">Arduino 2024</a>)</span>, based on the ATmega328P microcontroller, <span class="citation" data-cites="Microchip_ATmega328P">(<a href="references.html#ref-Microchip_ATmega328P" role="doc-biblioref">Microchip Technology 2024</a>)</span>, offers a small form factor (45 x 18 mm), ideal for compact robot designs. It includes 32KB of Flash memory, suitable for our advanced logging system, 2KB of SRAM for runtime operations, and runs at 16MHz, providing adequate processing power. The board features multiple analog inputs for our sensor array, PWM outputs for precise motor control, and maintains low power consumption while being cost-effective for both prototyping and final implementation.</p>
 </section>
 <section id="project-overview" class="level2" data-number="0.2">
 <h2 data-number="0.2" class="anchored" data-anchor-id="project-overview"><span class="header-section-number">0.2</span> Project Overview</h2>
-<p>In most projects, adjusting a line following robot for speed and efficiency becomes a tedious and time-consuming trial-and-error routine. Our project addresses this challenge by incorporating an advanced logging and analysis system that transforms the tuning process into a data-driven approach. The robot includes high-precision line detection using a 6-sensor array, PID-based motion control for smooth operation, and dual operating modes for analysis and high-speed performance. The comprehensive data logging system enables real-time performance monitoring, with flash-based storage for post-run analysis and a USB interface for data retrieval and analysis, providing the tools necessary for systematic testing and configuration.</p>
+<p>In most projects, adjusting a line following robot for speed and efficiency becomes a tedious and time-consuming trial-and-error routine. We have observed this adjustment procedure in some competitions and during hundreds of hours of videos on YouTube. Our project addresses this challenge by incorporating an advanced logging and analysis system that transforms the tuning process into a data-driven approach. The robot includes high-precision line detection using a 6-sensor array, PID-based motion control for smooth operation, and dual operating modes for analysis and high-speed performance. The comprehensive data logging system enables real-time performance monitoring, with flash-based storage for post-run analysis and a USB interface for data retrieval and analysis, providing the tools necessary for systematic testing and configuration.</p>
 </section>
 <section id="why-c" class="level2" data-number="0.3">
 <h2 data-number="0.3" class="anchored" data-anchor-id="why-c"><span class="header-section-number">0.3</span> Why C++?</h2>
@@ -253,6 +253,9 @@ div.csl-indent {
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
 <div id="ref-ArduinoNano" class="csl-entry" role="listitem">
 Arduino. 2024. <span>“Arduino Nano (@ArduinoNano).”</span> 2024. <a href="https://docs.arduino.cc/hardware/nano/">https://docs.arduino.cc/hardware/nano/</a>.
+</div>
+<div id="ref-Microchip_ATmega328P" class="csl-entry" role="listitem">
+Microchip Technology. 2024. <em>ATmega328P – Microcontroladores AVR de 8 Bits – Datasheet</em>. <a href="https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf">https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf</a>.
 </div>
 </div>
 </section>

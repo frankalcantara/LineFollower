@@ -8,7 +8,7 @@ IMPORTANT: Do not attempt to combine these tests into a single program. Each tes
 
 ### Test Programs
 
-#### 1. Line Sensors Test
+#### Line Sensors Test
 
 **Purpose**: Verify the proper functioning of the line sensors array.
 
@@ -35,7 +35,7 @@ IMPORTANT: Do not attempt to combine these tests into a single program. Each tes
 - If LED doesn't blink, verify LED pin connection;
 - If no serial output, check baud rate settings.
 
-#### 2. Marker Sensors Test
+#### Marker Sensors Test
 
 **Purpose**: Verify the proper functioning of the course marker sensors.
 
@@ -62,7 +62,7 @@ IMPORTANT: Do not attempt to combine these tests into a single program. Each tes
 - Verify sensor connections if one side isn't working;
 - Test with different marker materials if detection is poor.
 
-#### 3. Motors Test
+#### Motors Test
 
 **Purpose**: Verify proper motor function and movement patterns.
 
@@ -100,7 +100,7 @@ The robot will automatically perform this sequence:
 - If speed seems wrong, adjust MOTOR_SPEED constant;
 - For erratic behaviour, check battery voltage.
 
-#### 4. Button and LED Test
+#### Button and LED Test
 
 **Purpose**: Verify button operation and LED signalling.
 
@@ -129,7 +129,7 @@ The robot will automatically perform this sequence:
 - If modes skip, adjust DEBOUNCE_DELAY;
 - Check button wiring if no response.
 
-#### 5. Line Sensor Calibration Test
+#### Line Sensor Calibration Test
 
 **Purpose**: Calibrate line sensors and establish proper thresholds.
 
@@ -159,7 +159,7 @@ The robot will automatically perform this sequence:
 - If calibration fails, adjust `CALIBRATION_TIME`.
 - Verify surface and line contrast if readings are close.
 
-### General Tips
+## General Tips
 
 1. Always check battery voltage before testing.
 2. Clean sensors before beginning tests.

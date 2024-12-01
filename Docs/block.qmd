@@ -1,6 +1,6 @@
-# RoboZero Modules Description
+# RobotZero Modules Description
 
-As shown in Figure 1, RoboZero's architecture is organized into distinct layers, each responsible for specific aspects of the robot's operation.
+As shown in Figure 1, RobotZero's architecture is organized into distinct layers, each responsible for specific aspects of the robot's operation.
 
 ![Figure 1: RobotZero's Block Diagram](images/blockDiag.png){fig-alt="A diagram showing how modules are interconnected in RobotZero architecture." fig-align="center"}
 

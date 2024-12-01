@@ -72,7 +72,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles/styles.css">
 <meta property="og:title" content="RobotZero - 6&nbsp; Testing Guide">
 <meta property="og:description" content="">
 <meta property="og:site_name" content="RobotZero">
@@ -134,7 +134,7 @@ ul.task-list li input[type="checkbox"] {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./block.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RoboZero Modules Description</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">RobotZero Modules Description</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -174,8 +174,8 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#robotzero---arduino-nano---2024" id="toc-robotzero---arduino-nano---2024" class="nav-link active" data-scroll-target="#robotzero---arduino-nano---2024"><span class="header-section-number">6.1</span> RobotZero - Arduino Nano - 2024</a>
   <ul class="collapse">
   <li><a href="#test-programs" id="toc-test-programs" class="nav-link" data-scroll-target="#test-programs"><span class="header-section-number">6.1.1</span> Test Programs</a></li>
-  <li><a href="#general-tips" id="toc-general-tips" class="nav-link" data-scroll-target="#general-tips"><span class="header-section-number">6.1.2</span> General Tips</a></li>
   </ul></li>
+  <li><a href="#general-tips" id="toc-general-tips" class="nav-link" data-scroll-target="#general-tips"><span class="header-section-number">6.2</span> General Tips</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/frankalcantara/linefollower/edit/main/testing_guide.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/frankalcantara/linefollower/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -208,7 +208,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="test-programs" class="level3" data-number="6.1.1">
 <h3 data-number="6.1.1" class="anchored" data-anchor-id="test-programs"><span class="header-section-number">6.1.1</span> Test Programs</h3>
 <section id="line-sensors-test" class="level4" data-number="6.1.1.1">
-<h4 data-number="6.1.1.1" class="anchored" data-anchor-id="line-sensors-test"><span class="header-section-number">6.1.1.1</span> 1. Line Sensors Test</h4>
+<h4 data-number="6.1.1.1" class="anchored" data-anchor-id="line-sensors-test"><span class="header-section-number">6.1.1.1</span> Line Sensors Test</h4>
 <p><strong>Purpose</strong>: Verify the proper functioning of the line sensors array.</p>
 <p><strong>Setup</strong>: 1. Upload the <code>line-sensor-test</code> program to your Arduino Nano; 2. Open Serial Monitor (9600 baud); 3. Place your robot on a test surface with your line.</p>
 <p><strong>Test Procedure</strong>: 1. Move the robot slowly across the line; 2. The LED will blink briefly each time a sensor transitions from low to high; 3. The Serial Monitor will display which sensor detected the transition and its reading; 4. Test each sensor by ensuring the line crosses all sensors.</p>
@@ -216,7 +216,7 @@ ul.task-list li input[type="checkbox"] {
 <p><strong>Troubleshooting</strong>: - If a sensor never triggers, check its connections; - If readings are inconsistent, check sensor height from surface; - If LED doesn’t blink, verify LED pin connection; - If no serial output, check baud rate settings.</p>
 </section>
 <section id="marker-sensors-test" class="level4" data-number="6.1.1.2">
-<h4 data-number="6.1.1.2" class="anchored" data-anchor-id="marker-sensors-test"><span class="header-section-number">6.1.1.2</span> 2. Marker Sensors Test</h4>
+<h4 data-number="6.1.1.2" class="anchored" data-anchor-id="marker-sensors-test"><span class="header-section-number">6.1.1.2</span> Marker Sensors Test</h4>
 <p><strong>Purpose</strong>: Verify the proper functioning of the course marker sensors.</p>
 <p><strong>Setup</strong>: 1. Upload the <code>marker-sensor-test</code> program; 2. Open Serial Monitor (9600 baud); 3. Prepare test markers (either actual course markers or test material).</p>
 <p><strong>Test Procedure</strong>: 1. Move the robot over each marker; 2. Observe LED behaviour and Serial Monitor output; 3. Test both left and right marker sensors; 4. Try different marker positions and angles.</p>
@@ -224,7 +224,7 @@ ul.task-list li input[type="checkbox"] {
 <p><strong>Troubleshooting</strong>:<code>- If markers aren't detected, adjust</code>MARKER_THRESHOLD value; - Check sensor height if detection is inconsistent; - Verify sensor connections if one side isn’t working; - Test with different marker materials if detection is poor.</p>
 </section>
 <section id="motors-test" class="level4" data-number="6.1.1.3">
-<h4 data-number="6.1.1.3" class="anchored" data-anchor-id="motors-test"><span class="header-section-number">6.1.1.3</span> 3. Motors Test</h4>
+<h4 data-number="6.1.1.3" class="anchored" data-anchor-id="motors-test"><span class="header-section-number">6.1.1.3</span> Motors Test</h4>
 <p><strong>Purpose</strong>: Verify proper motor function and movement patterns.</p>
 <p><strong>Setup</strong>: 1. Upload the <code>motor-test</code> program; 2. Place robot on elevated surface or testing stand; 3. Ensure adequate space for movement; 4. Keep USB cable clear of wheels.</p>
 <p><strong>Test Procedure</strong>: The robot will automatically perform this sequence: 1. Move forward. 2. Stop. 3. Turn right. 4. Stop. 5. Turn left. 6. Stop. 7. Complete full turn. 8. Stop. 9. Move backward. 10. Stop. 11. Led blinking for 5 seconds. 12. Maximum speed running in straight line for 3s. 13. Stop.</p>
@@ -232,7 +232,7 @@ ul.task-list li input[type="checkbox"] {
 <p><strong>Troubleshooting</strong>: - If motors don’t turn, check connections; - For uneven movement, verify wheel attachment; - If speed seems wrong, adjust MOTOR_SPEED constant; - For erratic behaviour, check battery voltage.</p>
 </section>
 <section id="button-and-led-test" class="level4" data-number="6.1.1.4">
-<h4 data-number="6.1.1.4" class="anchored" data-anchor-id="button-and-led-test"><span class="header-section-number">6.1.1.4</span> 4. Button and LED Test</h4>
+<h4 data-number="6.1.1.4" class="anchored" data-anchor-id="button-and-led-test"><span class="header-section-number">6.1.1.4</span> Button and LED Test</h4>
 <p><strong>Purpose</strong>: Verify button operation and LED signalling.</p>
 <p><strong>Setup</strong>: 1. Upload the <code>button-led-test</code> program. 2. Open Serial Monitor (9600 baud).</p>
 <p><strong>Test Procedure</strong>: 1. Press button to cycle through LED modes: - Mode 0: LED off; - Mode 1: LED constantly on; - Mode 2: Slow blink (1 Hz); - Mode 3: Fast blink (5 Hz). 2. Test multiple button presses. 3. Observe LED behaviour in each mode.</p>
@@ -240,7 +240,7 @@ ul.task-list li input[type="checkbox"] {
 <p><strong>Troubleshooting</strong>: - If button seems unresponsive, check debounce timing; - For LED issues, verify PIN_STATUS_LED connection; - If modes skip, adjust DEBOUNCE_DELAY; - Check button wiring if no response.</p>
 </section>
 <section id="line-sensor-calibration-test" class="level4" data-number="6.1.1.5">
-<h4 data-number="6.1.1.5" class="anchored" data-anchor-id="line-sensor-calibration-test"><span class="header-section-number">6.1.1.5</span> 5. Line Sensor Calibration Test</h4>
+<h4 data-number="6.1.1.5" class="anchored" data-anchor-id="line-sensor-calibration-test"><span class="header-section-number">6.1.1.5</span> Line Sensor Calibration Test</h4>
 <p><strong>Purpose</strong>: Calibrate line sensors and establish proper thresholds.</p>
 <p><strong>Setup</strong>: 1. Upload the <code>line-calibration-test</code> program. 2. Open Serial Monitor (9600 baud). 3. Prepare test surface with line.</p>
 <p><strong>Test Procedure</strong>: 1. Place robot on testing surface. 2. Press button to start calibration. 3. During the 3-second calibration period: - Move robot over the line multiple times; - Cover all sensors; - Move at different angles. 4. Observe final calibration values.</p>
@@ -248,8 +248,9 @@ ul.task-list li input[type="checkbox"] {
 <p><strong>Troubleshooting</strong>: - If ranges are too narrow, check sensor height. - For inconsistent readings, clean sensors. - If calibration fails, adjust <code>CALIBRATION_TIME</code>. - Verify surface and line contrast if readings are close.</p>
 </section>
 </section>
-<section id="general-tips" class="level3" data-number="6.1.2">
-<h3 data-number="6.1.2" class="anchored" data-anchor-id="general-tips"><span class="header-section-number">6.1.2</span> General Tips</h3>
+</section>
+<section id="general-tips" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="general-tips"><span class="header-section-number">6.2</span> General Tips</h2>
 <ol type="1">
 <li>Always check battery voltage before testing.</li>
 <li>Clean sensors before beginning tests.</li>
@@ -263,7 +264,6 @@ ul.task-list li input[type="checkbox"] {
 <p>Regular testing using these programs can help identify problems before they affect robot performance in competition. If any test fails, resolve the issue before moving to the next test.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
